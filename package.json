@@ -1,0 +1,14 @@
+{
+  "name": "vef2-2024-hop1",
+  "version": "1.0.0",
+  "description": "Hopaverkefni 1 Kanban api",
+  "main": "app.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "kanban"
+  ],
+  "author": "Addi, Elli & Sandra",
+  "license": "ISC"
+}
