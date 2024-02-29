@@ -42,7 +42,7 @@ Geta bara séð verkefni í sínum hóp
 ### Admin?
 
 - búa til hóp
-- bæta í hóp
+- bæta í hóp ( kannski )
 
 ### Notandi
 
@@ -50,6 +50,13 @@ Geta bara séð verkefni í sínum hóp
 - bæta við verkefni
 - Breyta stöðu á verkefni
 - Bæta við lýsingu á stöðu?
+
+### Gestur
+
+- Stofna aðgang
+  - Skrá sig í hóp
+  - Notendanafn
+  - Lykilorð
 
 # Vefforritun 2, 2024, hópverkefni 1
 
