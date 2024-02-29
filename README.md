@@ -58,6 +58,8 @@ Geta bara séð verkefni í sínum hóp
   - Notendanafn
   - Lykilorð
 
+* Sjá lista af hópum?
+
 # Vefforritun 2, 2024, hópverkefni 1
 
 [Kynning í fyrirlestri](https://youtu.be/prmzOJFebFc).
