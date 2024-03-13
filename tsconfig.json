@@ -1,0 +1,17 @@
+{
+    "compileOnSave": true,
+    "compilerOptions": {
+      "target": "es6",
+      "strict": true,
+      "esModuleInterop": true,
+      "module": "esnext",
+      "moduleResolution": "node",
+      "forceConsistentCasingInFileNames": true,
+      "noImplicitAny": true,
+      "noEmitOnError": true,
+      "sourceMap": true,
+      "baseUrl": "./"
+    },
+    "include": ["**/*.ts"],
+    "exclude": ["node_modules", "**/*.spec.ts"]
+}
