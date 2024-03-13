@@ -1,59 +1,54 @@
 import express, { NextFunction, Request, Response } from 'express';
-import {router} from './routes/api.js';
+import { router } from './routes/api.js';
 import { catchErrors } from './lib/catch-errors.js';
 
 export const app = express();
 
 export async function index(req: Request, res: Response) {
-    res.json([
-        {
-            href: '/projects',
-            method: ['POST'],
-        }, {
-            href: '/projects/:projectId',
-            method: ['GET'],
-        }, {
-            href: '/projects/:projectId',
-            method: ['PATCH'],
-        }, {
-            href: '/projects/group/:groupId',
-            method: ['GET'],
-        }, {
-            href: '/projects/user/:userId',
-            method: ['GET'],
-        }, {
-            href: '/projects/status/:status',
-            method: ['GET'],
-        }, {
-            href: '/users',
-            method: ['POST'],
-        }, {
-            href: '/users/:userId',
-            method: ['GET'],
-        }, {
-            href: '/groups',
-            method: ['POST'],
-        }, {
-            href: '/groups/:groupId',
-            method: ['GET'],
-        }, {
-            href: '/groups/:groupId',
-            method: ['PATCH'],
-        }, {
-            href: '/groups/join',
-            method: ['POST'],
-        }
-    ])
+	res.json([
+		{
+			href: '/projects',
+			methods: ['GET', 'POST'],
+		}, {
+			href: '/projects/:projectId',
+			methods: ['GET', 'PATCH', 'DELETE'],
+		}, {
+			href: '/projects/:groupSlug/:userId/:status',
+			methods: ['GET']
+		},
+		{
+			href: '/projects/group/:groupId',
+			methods: ['GET'],
+		}, {
+			href: '/projects/user/:userId',
+			methods: ['GET'],
+		}, {
+			href: '/projects/status/:status',
+			methods: ['GET'],
+		}, {
+			href: '/users',
+			methods: ['GET', 'POST'],
+		}, {
+			href: '/users/:userId',
+			methods: ['GET', 'PATCH', 'DELETE'],
+		}, {
+			href: '/groups',
+			methods: ['GET', 'POST'],
+		}, {
+			href: '/groups/:groupId',
+			methods: ['GET', 'PATCH', 'DELETE'],
+		}
+	])
 }
 
-function cors (req: Request, res: Response, next: Function) {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE');
-    res.header(
+function cors(req: Request, res: Response, next: Function) {
+	res.header('Access-Control-Allow-Origin', '*');
+	res.header('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE');
+	res.header(
 		'Access-Control-Allow-Headers',
 		'Origin, X-Requested-With, Content-Type, Accept, Authorization',
 	);
-    next();
+	next();
 }
 
 app.use(express.json());
