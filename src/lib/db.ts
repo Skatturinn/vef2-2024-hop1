@@ -52,9 +52,10 @@ export async function query(q: string, values: Array<number | string | boolean |
 
 // Project functions
 
-export async function createProject(groupId: number, creatorId: number, status: string, description: string) {
-	const queryText = `INSERT INTO projects(group_id, creator_id, date_created, status, description) VALUES ($1, $2, CURRENT_DATE, $3, $4) RETURNING id;`;
-	return query(queryText, [groupId, creatorId, status, description]);
+export async function createProject(groupId: number, creatorId: number, status: number, description: string, title: string) {
+	const queryText = `INSERT INTO projects(group_id, creator_id, date_created, status, description, title) VALUES ($1, $2, CURRENT_DATE, $3, $4, $5) RETURNING *;`;
+	const result = query(queryText, [groupId, creatorId, status, description, title]);
+	return result || null;
 }
 
 export async function delProject(projectId: number) {

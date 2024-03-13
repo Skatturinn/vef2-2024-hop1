@@ -18,7 +18,8 @@ CREATE TABLE Projects (
     group_id INTEGER NOT NULL,
     creator_id INTEGER NOT NULL,
     date_created DATE NOT NULL,
-    status VARCHAR(255) NOT NULL,
+	title VARCHAR(64) NOT NULL,
+    status INTEGER NOT NULL check (status between 0 and 5),
     description TEXT
 );
 
