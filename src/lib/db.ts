@@ -1,12 +1,27 @@
-import { readFile } from 'fs/promises';
 import pg from 'pg';
-import environment1 from './environment.js';
+import { environment } from './environment.js';
 import { logger } from './logger.js';
+import { ILogger, logger as loggerSingleton } from './logger.js';
 
 const SCHEMA_FILE = './sql/schema.sql';
 const DROP_SCHEMA_FILE = './sql/drop.sql';
 
-const env = environment1(process.env, logger);
+interface IUser {
+	id: number;
+	isadmin: boolean;
+	username: string;
+	password: string;
+	avatar?: string;
+	group_id?: number;
+  }
+  
+  declare global {
+	namespace Express {
+	  interface User extends IUser {}
+	}
+  }
+
+const env = environment(process.env, logger);
 
 const sslConfig = {
     rejectUnauthorized: false, 
@@ -19,7 +34,7 @@ if (!env?.connectionString) {
 
 const {connectionString} = env;
 
-const pool = new pg.Pool({
+export const pool = new pg.Pool({
     connectionString,
     ssl: process.env.NODE_ENV === 'production' ? true : sslConfig,
 });
@@ -93,9 +108,23 @@ export async function getProjectsByStatus(status: string) {
 }
 
 // User functions
-export async function createUser(username: string, password: string, isAdmin: boolean, avatar: string) {
-    const queryText = `INSERT INTO Users(username, password, isAdmin, avatar) VALUES ($1, $2, $3, $4) RETURNING id;`;
-    return query(queryText, [username, password, isAdmin, avatar]);
+
+export async function loginUser(username: string): Promise<IUser | null> {
+	const queryText = 'SELECT * FROM Users WHERE username = $1';
+	try {
+	  const { rows } = await pool.query<IUser>(queryText, [username]);
+	  if (rows.length === 0) return null; 
+	  return rows[0]; 
+	} catch (error) {
+	  console.error('Failed to retrieve user by username:', error);
+	  throw error; 
+	}
+  }
+
+export async function createUser(isAdmin: boolean, username: string, password: string, avatar: string) {
+    console.log(`Executing query with params:`, {isAdmin, username, password, avatar});
+	const queryText = `INSERT INTO Users(isAdmin, username, password, avatar) VALUES ($1, $2, $3, $4) RETURNING id;`;
+    return query(queryText, [isAdmin, username, password, avatar]);
 }
 
 export async function delUser(userId: number) {
@@ -115,19 +144,14 @@ export async function getUserByUsername(username: string) {
 
 // Group functions
 
-export async function createGroup(name: string, description: string) {
-	const queryText = `INSERT INTO Groups(name, description, date_created) VALUES ($1, $2, CURRENT_DATE) RETURNING id;`;
-	return query(queryText, [name, description]);
+export async function createGroup(id: number, admin_id: number) {
+	const queryText = `INSERT INTO Groups(id, admin_id, admin_avatar) VALUES ($1, $2, $3) RETURNING id;`;
+	return query(queryText, [id, admin_id, 'default.jpg']);
 }
 
 export async function delGroup(groupId: number) {
 	const queryText = `DELETE FROM Groups WHERE id = $1;`;
 	return query(queryText, [groupId]);
-}
-
-export async function updateGroupDescription(groupId: number, newDescription: string) {
-	const queryText = `UPDATE Groups SET description = $2 WHERE id = $1 RETURNING *;`;
-	return query(queryText, [groupId, newDescription]);
 }
 
 export async function joinGroup(userId: number, groupId: number) {
@@ -138,24 +162,4 @@ export async function joinGroup(userId: number, groupId: number) {
 export async function getGroupById(groupId: number) {
 	const queryText = `SELECT * FROM Groups WHERE id = $1;`;
 	return query(queryText, [groupId]);
-}
-
-
-
-
-
-
-
-
-
-
-export async function dropSchema(dropFile = DROP_SCHEMA_FILE) {
-	const data = await readFile(dropFile);
-
-	return query(data.toString('utf-8'));
-}
-
-export async function createSchema(schemaFile = SCHEMA_FILE) {
-	const data = await readFile(schemaFile);
-	return query(data.toString('utf-8'));
 }
