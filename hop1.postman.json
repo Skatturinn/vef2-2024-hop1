@@ -142,7 +142,7 @@
             "response": []
         },
         {
-            "name": "PUT /projects/:projectId",
+            "name": "PATCH /projects/:projectId",
             "request": {
                 "method": "PUT",
                 "header": [],
@@ -167,7 +167,186 @@
                 }
             },
             "response": []
+        },
+        {
+            "name": "POST /users",
+            "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"username\": \"user1\",\n    \"password\": \"password\",\n    \"isAdmin\": false,\n    \"avatar\": \"avatar.png\"\n}",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    }
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/users",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "users"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "DELETE /users/:userId",
+            "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                    "raw": "{{baseUrl}}/users/1",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "users",
+                        "1"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "GET /users/:userId",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{baseUrl}}/users/1",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "users",
+                        "1"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "POST /groups",
+            "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"name\": \"Group Name\",\n    \"description\": \"Group Description\"\n}",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    }
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/groups",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "groups"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "DELETE /groups/:groupId",
+            "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                    "raw": "{{baseUrl}}/groups/1",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "groups",
+                        "1"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "PUT /groups/:groupId",
+            "request": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"newDescription\": \"Updated Group Description\"\n}",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    }
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/groups/1",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "groups",
+                        "1"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "GET /groups/:groupId",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "{{baseUrl}}/groups/1",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "groups",
+                        "1"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "POST /groups/join",
+            "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"userId\": 1,\n    \"groupId\": 1\n}",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    }
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/groups/join",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "groups",
+                        "join"
+                    ]
+                }
+            },
+            "response": []
         }
+             
 	],
 	"variable": [
 		{

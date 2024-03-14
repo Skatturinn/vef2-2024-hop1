@@ -1,60 +1,16 @@
 import express, { NextFunction, Request, Response } from 'express';
+import passport from 'passport';
+import { cors } from './lib/cors.js';
 import { router } from './routes/api.js';
-import { catchErrors } from './lib/catch-errors.js';
 
-export const app = express();
 
-export async function index(req: Request, res: Response) {
-	res.json([
-		{
-			href: '/projects',
-			methods: ['GET', 'POST'],
-		}, {
-			href: '/projects/:projectId',
-			methods: ['GET', 'PATCH', 'DELETE'],
-		}, {
-			href: '/projects/:groupSlug/:userId/:status',
-			methods: ['GET']
-		},
-		{
-			href: '/projects/group/:groupId',
-			methods: ['GET'],
-		}, {
-			href: '/projects/user/:userId',
-			methods: ['GET'],
-		}, {
-			href: '/projects/status/:status',
-			methods: ['GET'],
-		}, {
-			href: '/users',
-			methods: ['GET', 'POST'],
-		}, {
-			href: '/users/:userId',
-			methods: ['GET', 'PATCH', 'DELETE'],
-		}, {
-			href: '/groups',
-			methods: ['GET', 'POST'],
-		}, {
-			href: '/groups/:groupId',
-			methods: ['GET', 'PATCH', 'DELETE'],
-		}
-	])
-}
+const app = express();
 
-function cors(req: Request, res: Response, next: Function) {
-	res.header('Access-Control-Allow-Origin', '*');
-	res.header('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE');
-	res.header(
-		'Access-Control-Allow-Headers',
-		'Origin, X-Requested-With, Content-Type, Accept, Authorization',
-	);
-	next();
-}
 
 app.use(express.json());
 
 app.use(cors);
-app.get('/', catchErrors(index));
+app.use(passport.initialize());
 app.use(router);
 
 const port = process.env.PORT || 3000;

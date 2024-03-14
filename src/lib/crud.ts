@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { hashPassword } from './authUtils.js';
 import {
 	createProject,
 	delProject,
@@ -12,7 +13,6 @@ import {
 	getUserById,
 	createGroup,
 	delGroup,
-	updateGroupDescription,
 	joinGroup,
 	getGroupById,
 	getAllProjectsHandler,
@@ -26,7 +26,6 @@ import {
 	validationCheck,
 	xssSanitizer
 } from './validation.js';
-import { body } from 'express-validator';
 
 // Middleware fyrir projects
 
@@ -53,12 +52,9 @@ export const getProjectByIdHandler = async (req: Request, res: Response, next: N
 };
 
 export const createProjectHandler = [
-
 	groupMustExist,
-	body('status').isInt({ min: 0, max: 5 }),
-	// validateProjectStatus,
+	validateProjectStatus,
 	stringValidator({ field: 'description', optional: true }),
-	stringValidator({ field: 'title', optional: false }),
 	xssSanitizer('description'),
 	validationCheck,
 
@@ -139,14 +135,16 @@ export const createUserHandler = [
 	validationCheck,
 	async (req: Request, res: Response, next: NextFunction) => {
 		try {
-			const { username, password, isAdmin, avatar } = req.body;
-			const user = await createUser(username, password, isAdmin, avatar);
+			const { isAdmin, username, password, avatar } = req.body;
+			const hashedPassword = await hashPassword(password);
+			const user = await createUser(isAdmin, username, hashedPassword, avatar);
 			res.status(201).json(user);
 		} catch (error) {
 			next(error);
 		}
 	}
 ];
+
 
 export const deleteUserHandler = async (req: Request, res: Response, next: NextFunction) => {
 	try {
@@ -175,15 +173,11 @@ export const getUserByIdHandler = async (req: Request, res: Response, next: Next
 // Middleware fyrir groups
 
 export const createGroupHandler = [
-	stringValidator({ field: 'name', minLength: 3, maxLength: 255 }),
-	stringValidator({ field: 'description', optional: true }),
-	xssSanitizer('name'),
-	xssSanitizer('description'),
 	validationCheck,
 	async (req: Request, res: Response, next: NextFunction) => {
 		try {
-			const { name, description } = req.body;
-			const group = await createGroup(name, description);
+			const { id, admin_id } = req.body;
+			const group = await createGroup(id, admin_id);
 			res.status(201).json(group);
 		} catch (error) {
 			next(error);
@@ -200,22 +194,6 @@ export const deleteGroupHandler = async (req: Request, res: Response, next: Next
 		next(error);
 	}
 }
-
-export const updateGroupDescriptionHandler = [
-	groupMustExist,
-	stringValidator({ field: 'description', optional: true }),
-	xssSanitizer('description'),
-	validationCheck,
-	async (req: Request, res: Response, next: NextFunction) => {
-		try {
-			const { groupId, description } = req.body;
-			const updatedGroup = await updateGroupDescription(groupId, description);
-			res.status(200).json(updatedGroup);
-		} catch (error) {
-			next(error);
-		}
-	}
-];
 
 export const getGroupByIdHandler = async (req: Request, res: Response, next: NextFunction) => {
 	try {
