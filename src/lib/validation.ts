@@ -24,11 +24,12 @@ export const stringValidator = ({
 
 // User  validator
 export const usernameMustBeUnique = body('username').custom(async (username) => {
-  const user = await getUserByUsername(username);
-  if (user) {
+  const result = await getUserByUsername(username);
+  if (result !== null && result.rowCount !== null && result.rowCount > 0) {
     return Promise.reject(new Error('Username already exists'));
   }
 });
+
 
 // Project validator 
 export const validateProjectStatus = body('status').isIn(['Unstarted', 'In Progress', 'In Trouble', 'Completed']);
