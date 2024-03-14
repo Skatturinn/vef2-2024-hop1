@@ -1,7 +1,8 @@
 import pg from 'pg';
 import { environment } from './environment.js';
 import { logger } from './logger.js';
-import { ILogger, logger as loggerSingleton } from './logger.js';
+import { readFile } from 'fs/promises';
+// import { ILogger, logger as loggerSingleton } from './logger.js';
 
 const SCHEMA_FILE = './sql/schema.sql';
 const DROP_SCHEMA_FILE = './sql/drop.sql';
@@ -15,17 +16,17 @@ interface IUser {
 	group_id?: number;
 }
 
-declare global {
-	namespace Express {
-		interface User extends IUser { }
-	}
-}
+// declare global {
+// 	namespace Express {
+// 		interface User extends IUser { }
+// 	}
+// }
 
 const env = environment(process.env, logger);
 
-// const sslConfig = {
-//     rejectUnauthorized: false, 
-// };
+const sslConfig = {
+	rejectUnauthorized: false,
+};
 
 if (!env?.connectionString) {
 	logger.error('No connection string');
@@ -85,6 +86,31 @@ export async function getAllProjectsHandler() {
 		return result.rows
 	}
 	return null;
+}
+
+export async function getProjectsHandler(
+	fields: Array<string | null>,
+	values: Array<number | null>
+) {
+	const filteredFields = fields.filter((i) => typeof i === 'string');
+	const filteredValues = values.filter(
+		(i): i is number => typeof i === 'number',
+	);
+	console.log(filteredFields, filteredValues)
+	let p = '';
+	if (filteredFields.length !== 0) {
+		const params = filteredFields.map((field, i) => `${field} = $${i + 1}`);
+		p = `WHERE ${params.join(', ')}`
+	}
+	if (filteredFields.length !== filteredValues.length) {
+		throw new Error('fields and values must be of equal length');
+	}
+	const queryText = `SELECT * FROM projects ${p};`;
+	const result = await query(queryText, filteredValues);
+	if (result && result.rows) {
+		return result.rows
+	}
+	throw new Error('Ekki tókst að sækja verkefni')
 }
 
 export async function updateProjectStatus(projectId: number, newStatus: string, description: string) {
@@ -167,4 +193,15 @@ export async function joinGroup(userId: number, groupId: number) {
 export async function getGroupById(groupId: number) {
 	const queryText = `SELECT * FROM Groups WHERE id = $1;`;
 	return query(queryText, [groupId]);
+}
+
+export async function dropSchema(dropFile = DROP_SCHEMA_FILE) {
+	const data = await readFile(dropFile);
+
+	return query(data.toString('utf-8'));
+}
+
+export async function createSchema(schemaFile = SCHEMA_FILE) {
+	const data = await readFile(schemaFile);
+	return query(data.toString('utf-8'));
 }

@@ -15,7 +15,7 @@ import {
 	delGroup,
 	joinGroup,
 	getGroupById,
-	getAllProjectsHandler,
+	getProjectsHandler,
 } from './db.js';
 import {
 	stringValidator,
@@ -29,9 +29,35 @@ import {
 
 // Middleware fyrir projects
 
-export const getAllProjects = async (req: Request, res: Response, next: NextFunction) => {
+export const getProjects = async (req: Request, res: Response, next: NextFunction) => {
+	const { status, groupId, userId, creatorId } = req.query
+	const fields = [
+		Number.isInteger(Number(groupId)) && groupId ? 'group_id' : null,
+		Number.isInteger(Number(status)) && status ? 'status' : null,
+		Number.isInteger(Number(userId)) && userId ? 'assigned_id' : null,
+		Number.isInteger(Number(creatorId)) && creatorId ? 'creator_id' : null
+	]
+	const values = [
+		Number.isInteger(Number(groupId)) && groupId ? Number(groupId) : null,
+		Number.isInteger(Number(status)) && status ? Number(status) : null,
+		Number.isInteger(Number(userId)) && userId ? Number(userId) : null,
+		Number.isInteger(Number(creatorId)) && creatorId ? Number(creatorId) : null
+	]
+	// Þarf að breyta þessu svo hann sýni mögulega alla vitlausa stika ef fleiri en einn
+	if ((groupId && !Number.isInteger(Number(groupId)))) {
+		throw new Error('groupId leitar stiki á vitlausu formi')
+	}
+	if (status && !Number.isInteger(Number(status))) {
+		throw new Error('status leitar stiki á vitlausu formi')
+	}
+	if (userId && !Number.isInteger(Number(userId))) {
+		throw new Error('userId leitar stiki á vitlausu formi')
+	}
+	if (creatorId && !Number.isInteger(Number(creatorId))) {
+		throw new Error('creatorId leitar stiki á vitlausu formi')
+	}
 	try {
-		const projects = await getAllProjectsHandler();
+		const projects = await getProjectsHandler(fields, values);
 		res.status(200).json(projects);
 	} catch (error) {
 		next(error);

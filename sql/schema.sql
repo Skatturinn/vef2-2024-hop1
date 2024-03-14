@@ -17,6 +17,7 @@ CREATE TABLE Projects (
     id SERIAL PRIMARY KEY,
     group_id INTEGER NOT NULL,
     creator_id INTEGER NOT NULL,
+	assigned_id INTEGER,
     date_created DATE NOT NULL,
 	title VARCHAR(64) NOT NULL,
     status INTEGER NOT NULL check (status between 0 and 5),
