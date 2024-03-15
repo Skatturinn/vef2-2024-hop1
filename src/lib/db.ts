@@ -2,7 +2,8 @@ import pg from 'pg';
 import { environment } from './environment.js';
 import { logger } from './logger.js';
 import { deleteImage } from '../cloudinary.js';
-import { ILogger, logger as loggerSingleton } from './logger.js';
+import { readFile } from 'fs/promises';
+// import { ILogger, logger as loggerSingleton } from './logger.js';
 
 const SCHEMA_FILE = './sql/schema.sql';
 const DROP_SCHEMA_FILE = './sql/drop.sql';
@@ -80,12 +81,40 @@ export async function delProject(projectId: number) {
 
 export async function getAllProjectsHandler() {
 	const queryText = `SELECT * FROM projects;`;
-	return query(queryText);
+	const result = await query(queryText);
+	if (result && result.rows) {
+		return result.rows
+	}
+	return null;
 }
 
+export async function getProjectsHandler(
+	fields: Array<string | null>,
+	values: Array<number | null>
+) {
+	const filteredFields = fields.filter((i) => typeof i === 'string');
+	const filteredValues = values.filter(
+		(i): i is number => typeof i === 'number',
+	);
+	console.log(filteredFields, filteredValues)
+	let p = '';
+	if (filteredFields.length !== 0) {
+		const params = filteredFields.map((field, i) => `${field} = $${i + 1}`);
+		p = `WHERE ${params.join(' AND ')}`
+	}
+	if (filteredFields.length !== filteredValues.length) {
+		throw new Error('fields and values must be of equal length');
+	}
+	const queryText = `SELECT * FROM projects ${p};`;
+	const result = await query(queryText, filteredValues);
+	if (result && result.rows) {
+		return result.rows
+	}
+	throw new Error('Ekki tókst að sækja verkefni')
+}
 export async function updateProjectStatus(projectId: number, newStatus: string, description: string) {
-    const queryText = `UPDATE projects SET status = $2, description = COALESCE($3, description) WHERE id = $1 RETURNING *;`;
-    return query(queryText, [projectId, newStatus, description]);
+	const queryText = `UPDATE projects SET status = $2, description = COALESCE($3, description) WHERE id = $1 RETURNING *;`;
+	return query(queryText, [projectId, newStatus, description]);
 }
 
 export async function getProjectsByGroupId(groupId: number) {

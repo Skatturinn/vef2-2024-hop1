@@ -15,7 +15,7 @@ import {
     delGroup,
     joinGroup, 
     getGroupById,
-    getAllProjectsHandler,
+    getProjectsHandler,
      } from './db.js';
 import { 
     stringValidator, 
@@ -29,13 +29,42 @@ import { uploadImage } from '../cloudinary.js';
 
 // Middleware fyrir projects
 
-export const getAllProjects = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const projects = await getAllProjectsHandler();
-        res.status(200).json(projects);
-    } catch (error) {
-        next(error);
-    }
+export const getProjects = async (req: Request, res: Response, next: NextFunction) => {
+	const { status, groupId, userId, creatorId } = req.query
+	const fields = [
+		Number.isInteger(Number(groupId)) && groupId ? 'group_id' : null,
+		Number.isInteger(Number(status)) && status ? 'status' : null,
+		Number.isInteger(Number(userId)) && userId ? 'assigned_id' : null,
+		Number.isInteger(Number(creatorId)) && creatorId ? 'creator_id' : null
+	]
+	const values = [
+		Number.isInteger(Number(groupId)) && groupId ? Number(groupId) : null,
+		Number.isInteger(Number(status)) && status ? Number(status) : null,
+		Number.isInteger(Number(userId)) && userId ? Number(userId) : null,
+		Number.isInteger(Number(creatorId)) && creatorId ? Number(creatorId) : null
+	]
+	const villur = [];
+	if ((groupId && !Number.isInteger(Number(groupId)))) {
+		villur.push('groupId')
+	}
+	if (status && !Number.isInteger(Number(status))) {
+		villur.push('status')
+	}
+	if (userId && !Number.isInteger(Number(userId))) {
+		villur.push('userId')
+	}
+	if (creatorId && !Number.isInteger(Number(creatorId))) {
+		villur.push('creatorId')
+	}
+	if (villur.length > 0) {
+		throw new Error(`leitar stiki á vitlausu formi: ${villur.join(', ')}`)
+	}
+	try {
+		const projects = await getProjectsHandler(fields, values);
+		res.status(200).json(projects);
+	} catch (error) {
+		next(error);
+	}
 }
 
 export const getProjectByIdHandler = async (req: Request, res: Response, next: NextFunction) => {

@@ -6,7 +6,7 @@ import { loginUser } from '../lib/db.js';
 import { authenticate, isAdmin } from '../lib/auth.js';
 import { catchErrors } from '../lib/catch-errors.js';
 import {
-    getAllProjects,
+    getProjects,
     getProjectByIdHandler, 
     createProjectHandler,
     deleteProjectHandler,
@@ -32,45 +32,48 @@ export async function error() {
 }
 
 export async function index(req: Request, res: Response) {
-    res.json([
-        {
-            href: '/projects',
-            method: ['POST'],
-        }, {
-            href: '/projects/:projectId',
-            method: ['GET'],
-        }, {
-            href: '/projects/:projectId',
-            method: ['PATCH'],
-        }, {
-            href: '/projects/group/:groupId',
-            method: ['GET'],
-        }, {
-            href: '/projects/user/:userId',
-            method: ['GET'],
-        }, {
-            href: '/projects/status/:status',
-            method: ['GET'],
-        }, {
-            href: '/users',
-            method: ['POST'],
-        }, {
-            href: '/users/:userId',
-            method: ['GET'],
-        }, {
-            href: '/groups',
-            method: ['POST'],
-        }, {
-            href: '/groups/:groupId',
-            method: ['GET'],
-        }, {
-            href: '/groups/:groupId',
-            method: ['PATCH'],
-        }, {
-            href: '/groups/join',
-            method: ['POST'],
-        }
-    ])
+	res.json([
+		{
+			href: '/projects',
+			method: ['GET', 'POST'],
+			description: 'Fáðu lista af verkefnum og bættu við',
+			filtering: {
+				description: 'Sæktu lista af verkefnum útfrá leitar stikum',
+				parameters: {
+					status: {
+						description: 'leita út frá stöðu verkefnis',
+						href: '/projects?status=value'
+					},
+					groupId: {
+						description: 'Leita af verkefnum út frá hóp',
+						href: '/projects?groupId=1'
+					},
+					userId: {
+						description: 'Leita af verkefnum út frá notanda',
+						href: 'projects?userId=1'
+					}
+				}
+			}
+		}, {
+			href: '/projects/:projectId',
+			method: ['GET', 'PATCH'],
+		}, {
+			href: '/users',
+			method: ['GET', 'POST'],
+		}, {
+			href: '/users/:userId',
+			method: ['GET'],
+		}, {
+			href: '/groups',
+			method: ['GET', 'POST'],
+		}, {
+			href: '/groups/:groupId',
+			method: ['GET', 'PATCH', 'DELETE'],
+		}, {
+			href: '/groups/join',
+			method: ['POST'],
+		}
+	])
 }
 
 
@@ -96,7 +99,7 @@ router.post('/login', async (req, res) => {
 });
 
 // Project routes
-router.get('/projects', getAllProjects);
+router.get('/projects', catchErrors(getProjects));
 router.post('/projects', createProjectHandler);
 router.delete('/projects/:projectId', authenticate, isAdmin, deleteProjectHandler);
 router.get('/projects/group/:groupId', getProjectsByGroupIdHandler);
