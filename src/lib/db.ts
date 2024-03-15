@@ -185,6 +185,12 @@ export async function getUserByUsername(username: string) {
 
 // Group functions
 
+export async function getGroups(page: number, admin_id: false | number) {
+	const queryText = `SELECT * FROM groups ${admin_id ? `WHERE admin_id = $1` : ''} OFFSET ${page - 1 > 0 ? (page - 1) * 10 : 0} LIMIT 10;`
+	const result = admin_id ? await query(queryText, [admin_id]) : await query(queryText)
+	return result?.rows
+}
+
 export async function createGroup(id: number, admin_id: number) {
 	const queryText = `INSERT INTO Groups(id, admin_id, admin_avatar) VALUES ($1, $2, $3) RETURNING id;`;
 	return query(queryText, [id, admin_id, 'default.jpg']);

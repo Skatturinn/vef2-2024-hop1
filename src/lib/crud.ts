@@ -13,7 +13,8 @@ import {
 	joinGroup,
 	getGroupById,
 	getProjectsHandler,
-	getUsersPage
+	getUsersPage,
+	getGroups
 } from './db.js';
 import {
 	stringValidator,
@@ -52,8 +53,6 @@ export const getProjects = async (req: Request, res: Response) => {
 	]
 	const villur: Array<string> = [];
 	Object.keys(stikar).forEach(key => !stikar[key] && req.query[key] && villur.push(key))
-	Object.keys(stikar).forEach(key => !stikar[key] && req.query[key] && villur.push(key))
-
 	if (villur.length > 0) {
 		res.status(400).json({ error: `leitar stiki eiga að vera heiltölur stærri en 0: ${villur.join(', ')}` });
 	} else {
@@ -190,6 +189,24 @@ export const getUserByIdHandler = async (req: Request, res: Response, next: Next
 
 
 // Middleware fyrir groups
+export const getGroupsResponse = async (req: Request, res: Response) => {
+	const { page, admin_id } = req.query;
+	const stikar: {
+		[key: string]: false | number
+	} = {
+		page: Number(page) > 0 && Number.parseInt(String(page)),
+		admin_id: Number(admin_id) > 0 && Number.parseInt(String(admin_id)),
+	}
+	const villur: Array<string> = [];
+	Object.keys(stikar).forEach(key => !stikar[key] && req.query[key] && villur.push(key))
+	if (villur.length > 0) {
+		res.status(400).json({ error: `leitar stiki eiga að vera heiltölur stærri en 0: ${villur.join(', ')}` });
+	} else {
+		const pageFiltered = Number(page) > 0 && Number.parseInt(String(page)) || 0;
+		const groups = await getGroups(pageFiltered, stikar.admin_id);
+		res.status(200).json(groups)
+	}
+}
 
 export const createGroupHandler = [
 	validationCheck,

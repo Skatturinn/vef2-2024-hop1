@@ -19,6 +19,7 @@ import {
 	getGroupByIdHandler,
 	joinGroupHandler,
 	getUsers,
+	getGroupsResponse,
 } from '../lib/crud.js';
 
 dotenv.config();
@@ -44,6 +45,10 @@ export async function index(req: Request, res: Response) {
 					assigned_id: {
 						description: 'Leita af verkefnum út frá notanda',
 						href: '/projects?assigned_id=1'
+					},
+					page: {
+						description: 'Hámark 10 lausnir per síðu',
+						href: '/?page=1'
 					}
 				}
 			}
@@ -64,6 +69,10 @@ export async function index(req: Request, res: Response) {
 						description: 'Leita af notendum út frá admin',
 						href: '/users?isadmin=false'
 
+					},
+					page: {
+						description: 'Hámark 10 lausnir per síðu',
+						href: '/?page=1'
 					}
 				}
 			}
@@ -73,6 +82,19 @@ export async function index(req: Request, res: Response) {
 		}, {
 			href: '/groups',
 			method: ['GET', 'POST'],
+			filtering: {
+				description: 'GET query filters',
+				parameters: {
+					admin_id: {
+						description: 'Leita af hópum eftir stjórnendum',
+						href: '/groups?admin_id=1'
+					},
+					page: {
+						description: 'Hámark 10 lausnir per síðu',
+						href: '/?page=1'
+					}
+				}
+			}
 		}, {
 			href: '/groups/:groupId',
 			method: ['GET', 'PATCH', 'DELETE'],
@@ -116,7 +138,7 @@ router.delete('/users/:userId', authenticate, isAdmin, deleteUserHandler);
 router.get('/users/:userId', getUserByIdHandler);
 
 // Group routes
-router.get('/groups')
+router.get('/groups', catchErrors(getGroupsResponse))
 router.post('/groups', createGroupHandler);
 router.delete('/groups/:groupId', authenticate, isAdmin, deleteGroupHandler);
 router.get('/groups/:groupId', getGroupByIdHandler);
