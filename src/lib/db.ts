@@ -100,7 +100,7 @@ export async function getProjectsHandler(
 	let p = '';
 	if (filteredFields.length !== 0) {
 		const params = filteredFields.map((field, i) => `${field} = $${i + 1}`);
-		p = `WHERE ${params.join(', ')}`
+		p = `WHERE ${params.join(' AND ')}`
 	}
 	if (filteredFields.length !== filteredValues.length) {
 		throw new Error('fields and values must be of equal length');

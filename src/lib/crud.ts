@@ -43,18 +43,21 @@ export const getProjects = async (req: Request, res: Response, next: NextFunctio
 		Number.isInteger(Number(userId)) && userId ? Number(userId) : null,
 		Number.isInteger(Number(creatorId)) && creatorId ? Number(creatorId) : null
 	]
-	// Þarf að breyta þessu svo hann sýni mögulega alla vitlausa stika ef fleiri en einn
+	const villur = [];
 	if ((groupId && !Number.isInteger(Number(groupId)))) {
-		throw new Error('groupId leitar stiki á vitlausu formi')
+		villur.push('groupId')
 	}
 	if (status && !Number.isInteger(Number(status))) {
-		throw new Error('status leitar stiki á vitlausu formi')
+		villur.push('status')
 	}
 	if (userId && !Number.isInteger(Number(userId))) {
-		throw new Error('userId leitar stiki á vitlausu formi')
+		villur.push('userId')
 	}
 	if (creatorId && !Number.isInteger(Number(creatorId))) {
-		throw new Error('creatorId leitar stiki á vitlausu formi')
+		villur.push('creatorId')
+	}
+	if (villur.length > 0) {
+		throw new Error(`leitar stiki á vitlausu formi: ${villur.join(', ')}`)
 	}
 	try {
 		const projects = await getProjectsHandler(fields, values);
