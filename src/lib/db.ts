@@ -90,7 +90,8 @@ export async function getAllProjectsHandler() {
 
 export async function getProjectsHandler(
 	fields: Array<string | null>,
-	values: Array<number | null>
+	values: Array<number | null>,
+	page: number
 ) {
 	const filteredFields = fields.filter((i) => typeof i === 'string');
 	const filteredValues = values.filter(
@@ -105,12 +106,15 @@ export async function getProjectsHandler(
 	if (filteredFields.length !== filteredValues.length) {
 		throw new Error('fields and values must be of equal length');
 	}
-	const queryText = `SELECT * FROM projects ${p};`;
+	// SELECT * FROM people OFFSET 0 LIMIT 10
+
+	console.log(page)
+	const queryText = `SELECT * FROM projects ${p} OFFSET ${page - 1 > 0 ? (page - 1) * 10 : 0}  LIMIT ${(page - 1 > 0 ? page * 10 : 10)};`;
+	console.log(queryText, filteredValues)
 	const result = await query(queryText, filteredValues);
 	if (result && result.rows) {
 		return result.rows
 	}
-	throw new Error('Ekki tókst að sækja verkefni')
 }
 
 export async function updateProjectStatus(projectId: number, newStatus: string, description: string) {

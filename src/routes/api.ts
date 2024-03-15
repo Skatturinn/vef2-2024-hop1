@@ -102,9 +102,9 @@ router.post('/login', async (req, res) => {
 router.get('/projects', catchErrors(getProjects));
 router.post('/projects', createProjectHandler);
 router.delete('/projects/:projectId', deleteProjectHandler);
-router.get('/projects/group/:groupId', getProjectsByGroupIdHandler);
-router.get('/projects/user/:userId', getProjectsByUserIdHandler);
-router.get('/projects/status/:status', getProjectsByStatusHandler);
+// router.get('/projects/group/:groupId', getProjectsByGroupIdHandler);
+// router.get('/projects/user/:userId', getProjectsByUserIdHandler);
+// router.get('/projects/status/:status', getProjectsByStatusHandler);
 router.get('/projects/:projectId', getProjectByIdHandler);
 router.patch('/projects/:projectId', updateProjectStatusHandler);
 

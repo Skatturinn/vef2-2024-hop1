@@ -30,40 +30,40 @@ import {
 // Middleware fyrir projects
 
 export const getProjects = async (req: Request, res: Response, next: NextFunction) => {
-	const { status, groupId, userId, creatorId } = req.query
+	const { status, groupId, userId, creatorId, page } = req.query
+	const stikar = {
+		status: Number(status) > 0 && Number.parseInt(String(status)),
+		groupId: Number(groupId) > 0 && Number.parseInt(String(groupId)),
+		userId: Number(userId) > 0 && Number.parseInt(String(userId)),
+		creatorId: Number(creatorId) > 0 && Number.parseInt(String(creatorId)),
+		page: Number(page) > 0 && Number.parseInt(String(page))
+	}
 	const fields = [
-		Number.isInteger(Number(groupId)) && groupId ? 'group_id' : null,
-		Number.isInteger(Number(status)) && status ? 'status' : null,
-		Number.isInteger(Number(userId)) && userId ? 'assigned_id' : null,
-		Number.isInteger(Number(creatorId)) && creatorId ? 'creator_id' : null
+		stikar.groupId ? 'group_id' : null,
+		stikar.status ? 'status' : null,
+		stikar.userId ? 'assigned_id' : null,
+		stikar.creatorId ? 'creator_id' : null
 	]
 	const values = [
-		Number.isInteger(Number(groupId)) && groupId ? Number(groupId) : null,
-		Number.isInteger(Number(status)) && status ? Number(status) : null,
-		Number.isInteger(Number(userId)) && userId ? Number(userId) : null,
-		Number.isInteger(Number(creatorId)) && creatorId ? Number(creatorId) : null
+		stikar.groupId || null,
+		stikar.status || null,
+		stikar.userId || null,
+		stikar.creatorId || null
 	]
 	const villur = [];
-	if ((groupId && !Number.isInteger(Number(groupId)))) {
-		villur.push('groupId')
-	}
-	if (status && !Number.isInteger(Number(status))) {
-		villur.push('status')
-	}
-	if (userId && !Number.isInteger(Number(userId))) {
-		villur.push('userId')
-	}
-	if (creatorId && !Number.isInteger(Number(creatorId))) {
-		villur.push('creatorId')
-	}
+	groupId && !stikar.groupId && villur.push('groupId')
+	status && !stikar.status && villur.push('status')
+	userId && !stikar.userId && villur.push('userId')
+	creatorId && !stikar.creatorId && villur.push('creatorId')
 	if (villur.length > 0) {
-		throw new Error(`leitar stiki á vitlausu formi: ${villur.join(', ')}`)
+		res.status(400).json({ error: `leitar stiki eiga að vera heiltölur stærri en 0: ${villur.join(', ')}` });
 	}
-	try {
-		const projects = await getProjectsHandler(fields, values);
-		res.status(200).json(projects);
-	} catch (error) {
-		next(error);
+	const projects = await getProjectsHandler(fields, values, stikar.page || 0);
+	if (!projects) {
+		res.status(500).json({ error: 'villa við að sækja umbeðin verkefni, vinsamlegast reynið aftur' })
+	} else {
+		res.status(200).json(projects?.length > 0 ? projects : { message: 'Engar niðurstöður' });
+
 	}
 }
 
@@ -81,9 +81,9 @@ export const getProjectByIdHandler = async (req: Request, res: Response, next: N
 };
 
 export const createProjectHandler = [
+	stringValidator({ field: 'description', optional: true }),
 	groupMustExist,
 	validateProjectStatus,
-	stringValidator({ field: 'description', optional: true }),
 	xssSanitizer('description'),
 	validationCheck,
 
