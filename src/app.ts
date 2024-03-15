@@ -20,6 +20,7 @@ app.use((_req: Request, res: Response) => {
 });
 
 app.use((err: Error, _req: Request, res: Response) => {
+	console.log('test')
 	if (
 		err instanceof SyntaxError &&
 		'status' in err &&

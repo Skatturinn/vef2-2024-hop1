@@ -18,57 +18,64 @@ import {
 	deleteGroupHandler,
 	getGroupByIdHandler,
 	joinGroupHandler,
+	getUsers,
 } from '../lib/crud.js';
 
 dotenv.config();
 
 export const router = express.Router();
 
-export async function error() {
-	throw new Error('error');
-}
-
 export async function index(req: Request, res: Response) {
 	res.json([
 		{
 			href: '/projects',
 			method: ['GET', 'POST'],
-			description: 'Fáðu lista af verkefnum og bættu við',
 			filtering: {
-				description: 'Sæktu lista af verkefnum útfrá leitar stikum',
+				description: 'GET query filters',
 				parameters: {
 					status: {
 						description: 'leita út frá stöðu verkefnis',
-						href: '/projects?status=value'
+						href: '/projects?status=1'
 					},
-					groupId: {
+					group_id: {
 						description: 'Leita af verkefnum út frá hóp',
-						href: '/projects?groupId=1'
+						href: '/projects?group_id=1'
 					},
-					userId: {
+					assigned_id: {
 						description: 'Leita af verkefnum út frá notanda',
-						href: 'projects?userId=1'
+						href: '/projects?assigned_id=1'
 					}
 				}
 			}
 		}, {
 			href: '/projects/:projectId',
-			method: ['GET', 'PATCH'],
+			method: ['GET', 'PATCH', 'DELETE'],
 		}, {
 			href: '/users',
 			method: ['GET', 'POST'],
+			filtering: {
+				description: 'GET query filters',
+				parameters: {
+					group_id: {
+						descripiton: 'Leita af notendum út frá hóp',
+						href: '/users?group_id=1'
+					},
+					isadmin: {
+						description: 'Leita af notendum út frá admin',
+						href: '/users?isadmin=false'
+
+					}
+				}
+			}
 		}, {
 			href: '/users/:userId',
-			method: ['GET'],
+			method: ['GET', 'PATCH', 'DELETE'],
 		}, {
 			href: '/groups',
 			method: ['GET', 'POST'],
 		}, {
 			href: '/groups/:groupId',
 			method: ['GET', 'PATCH', 'DELETE'],
-		}, {
-			href: '/groups/join',
-			method: ['POST'],
 		}
 	])
 }
@@ -103,11 +110,13 @@ router.get('/projects/:projectId', getProjectByIdHandler);
 router.patch('/projects/:projectId', updateProjectStatusHandler);
 
 // User routes
+router.get('/users', catchErrors(getUsers))
 router.post('/users', createUserHandler);
 router.delete('/users/:userId', authenticate, isAdmin, deleteUserHandler);
 router.get('/users/:userId', getUserByIdHandler);
 
 // Group routes
+router.get('/groups')
 router.post('/groups', createGroupHandler);
 router.delete('/groups/:groupId', authenticate, isAdmin, deleteGroupHandler);
 router.get('/groups/:groupId', getGroupByIdHandler);

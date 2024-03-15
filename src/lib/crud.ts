@@ -5,9 +5,6 @@ import {
 	delProject,
 	updateProjectStatus,
 	getProjectById,
-	getProjectsByGroupId,
-	getProjectsByUserId,
-	getProjectsByStatus,
 	createUser,
 	delUser,
 	getUserById,
@@ -16,6 +13,7 @@ import {
 	joinGroup,
 	getGroupById,
 	getProjectsHandler,
+	getUsersPage
 } from './db.js';
 import {
 	stringValidator,
@@ -29,41 +27,42 @@ import {
 
 // Middleware fyrir projects
 
-export const getProjects = async (req: Request, res: Response, next: NextFunction) => {
-	const { status, groupId, userId, creatorId, page } = req.query
-	const stikar = {
+export const getProjects = async (req: Request, res: Response) => {
+	const { status, group_id, assigned_id, creator_id, page } = req.query
+	const stikar: {
+		[key: string]: false | number
+	} = {
 		status: Number(status) > 0 && Number.parseInt(String(status)),
-		groupId: Number(groupId) > 0 && Number.parseInt(String(groupId)),
-		userId: Number(userId) > 0 && Number.parseInt(String(userId)),
-		creatorId: Number(creatorId) > 0 && Number.parseInt(String(creatorId)),
+		group_id: Number(group_id) > 0 && Number.parseInt(String(group_id)),
+		assigned_id: Number(assigned_id) > 0 && Number.parseInt(String(assigned_id)),
+		creator_id: Number(creator_id) > 0 && Number.parseInt(String(creator_id)),
 		page: Number(page) > 0 && Number.parseInt(String(page))
 	}
 	const fields = [
-		stikar.groupId ? 'group_id' : null,
+		stikar.group_id ? 'group_id' : null,
 		stikar.status ? 'status' : null,
-		stikar.userId ? 'assigned_id' : null,
-		stikar.creatorId ? 'creator_id' : null
+		stikar.assigned_id ? 'assigned_id' : null,
+		stikar.creator_id ? 'creator_id' : null
 	]
 	const values = [
-		stikar.groupId || null,
+		stikar.group_id || null,
 		stikar.status || null,
-		stikar.userId || null,
-		stikar.creatorId || null
+		stikar.assigned_id || null,
+		stikar.creator_id || null
 	]
-	const villur = [];
-	groupId && !stikar.groupId && villur.push('groupId')
-	status && !stikar.status && villur.push('status')
-	userId && !stikar.userId && villur.push('userId')
-	creatorId && !stikar.creatorId && villur.push('creatorId')
+	const villur: Array<string> = [];
+	Object.keys(stikar).forEach(key => !stikar[key] && req.query[key] && villur.push(key))
+	Object.keys(stikar).forEach(key => !stikar[key] && req.query[key] && villur.push(key))
+
 	if (villur.length > 0) {
 		res.status(400).json({ error: `leitar stiki eiga að vera heiltölur stærri en 0: ${villur.join(', ')}` });
-	}
-	const projects = await getProjectsHandler(fields, values, stikar.page || 0);
-	if (!projects) {
-		res.status(500).json({ error: 'villa við að sækja umbeðin verkefni, vinsamlegast reynið aftur' })
 	} else {
-		res.status(200).json(projects?.length > 0 ? projects : { message: 'Engar niðurstöður' });
-
+		const projects = await getProjectsHandler(fields, values, stikar.page || 0);
+		if (!projects) {
+			res.status(500).json({ error: 'villa við að sækja umbeðin verkefni, vinsamlegast reynið aftur' })
+		} else {
+			res.status(200).json(projects?.length > 0 ? projects : { message: 'Engar niðurstöður' });
+		}
 	}
 }
 
@@ -89,8 +88,8 @@ export const createProjectHandler = [
 
 	async (req: Request, res: Response, next: NextFunction) => {
 		try {
-			const { groupId, creatorId, status, description, title } = req.body;
-			const project = await createProject(groupId, creatorId, status, description, title);
+			const { group_id, creator_id, status, description, title } = req.body;
+			const project = await createProject(group_id, creator_id, status, description, title);
 			res.status(201).json(project);
 		} catch (error) {
 			next(error);
@@ -126,6 +125,27 @@ export const updateProjectStatusHandler = [
 ];
 
 // Middleware fyrir users
+export const getUsers = async (req: Request, res: Response) => {
+	const { page, group_id, isadmin } = req.query;
+	const stikar: {
+		[key: string]: boolean | number | string
+	} = {
+		page: Number(page) > 0 && Number.parseInt(String(page)),
+		group_id: Number(group_id) > 0 && Number.parseInt(String(group_id)),
+		isadmin: typeof isadmin !== 'undefined' && String(isadmin)
+	};
+	const villur: Array<string> = [];
+	Object.keys(stikar).forEach(key => !stikar[key] && req.query[key] && villur.push(key))
+	if (villur.length > 0) {
+		res.status(400).json({ error: `leitar stiki eiga að vera heiltölur stærri en 0: ${villur.join(', ')}` });
+	} else {
+		const pageFiltered = Number(page) > 0 && Number.parseInt(String(page));
+		const users = await getUsersPage(pageFiltered || 0);
+		res.status(200).json(users)
+	}
+}
+
+
 export const createUserHandler = [
 	usernameMustBeUnique,
 	stringValidator({ field: 'username', minLength: 3, maxLength: 255 }),
@@ -158,7 +178,7 @@ export const deleteUserHandler = async (req: Request, res: Response, next: NextF
 export const getUserByIdHandler = async (req: Request, res: Response, next: NextFunction) => {
 	try {
 		const { userId } = req.params;
-		const user = await getUserById(parseInt(userId));
+		const user = await getUserById(Number.parseInt(userId));
 		if (!user) {
 			return res.status(404).json({ message: 'User not found' });
 		}
@@ -186,8 +206,8 @@ export const createGroupHandler = [
 
 export const deleteGroupHandler = async (req: Request, res: Response, next: NextFunction) => {
 	try {
-		const { groupId } = req.params;
-		await delGroup(parseInt(groupId));
+		const { group_id } = req.params;
+		await delGroup(parseInt(group_id));
 		res.status(204).end();
 	} catch (error) {
 		next(error);
@@ -196,8 +216,8 @@ export const deleteGroupHandler = async (req: Request, res: Response, next: Next
 
 export const getGroupByIdHandler = async (req: Request, res: Response, next: NextFunction) => {
 	try {
-		const { groupId } = req.params;
-		const group = await getGroupById(parseInt(groupId));
+		const { group_id } = req.params;
+		const group = await getGroupById(parseInt(group_id));
 		if (!group) {
 			return res.status(404).json({ message: 'Group not found' });
 		}
@@ -211,8 +231,8 @@ export const joinGroupHandler = [
 	groupMustExist,
 	async (req: Request, res: Response, next: NextFunction) => {
 		try {
-			const { userId, groupId } = req.body;
-			const user = await joinGroup(userId, groupId);
+			const { userId, group_id } = req.body;
+			const user = await joinGroup(userId, group_id);
 			res.status(200).json(user);
 		} catch (error) {
 			next(error);

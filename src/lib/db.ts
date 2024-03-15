@@ -106,11 +106,8 @@ export async function getProjectsHandler(
 	if (filteredFields.length !== filteredValues.length) {
 		throw new Error('fields and values must be of equal length');
 	}
-	// SELECT * FROM people OFFSET 0 LIMIT 10
 
-	console.log(page)
-	const queryText = `SELECT * FROM projects ${p} OFFSET ${page - 1 > 0 ? (page - 1) * 10 : 0}  LIMIT ${(page - 1 > 0 ? page * 10 : 10)};`;
-	console.log(queryText, filteredValues)
+	const queryText = `SELECT * FROM projects ${p} OFFSET ${page - 1 > 0 ? (page - 1) * 10 : 0}  LIMIT 10;`;
 	const result = await query(queryText, filteredValues);
 	if (result && result.rows) {
 		return result.rows
@@ -143,6 +140,15 @@ export async function getProjectsByStatus(status: string) {
 }
 
 // User functions
+
+export async function getUsersPage(page: number = 0) {
+	const queryText = `SELECT id, isadmin, username, avatar, group_id FROM users OFFSET ${page - 1 > 0 ? (page - 1) * 10 : 0}  LIMIT 10;`
+	const result = await query(queryText);
+	if (result && result?.rows) {
+		return result.rows
+	}
+	return null
+}
 
 export async function loginUser(username: string): Promise<IUser | null> {
 	const queryText = 'SELECT * FROM Users WHERE username = $1';
