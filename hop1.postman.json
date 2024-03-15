@@ -29,7 +29,7 @@
                 "header": [],
                 "body": {
                     "mode": "raw",
-                    "raw": "{\n    \"groupId\": 1,\n    \"creatorId\": 1,\n    \"status\": \"Unstarted\",\n    \"description\": \"Project Description\"\n}",
+                    "raw": "{\n    \"groupId\": 1,\n    \"creatorId\": 1, \n    \"assigned_id\": 1,\n    \"status\": 0-5,\n    \"description\": \"Project Description\"\n}",
                     "options": {
                         "raw": {
                             "language": "json"
@@ -110,14 +110,14 @@
                 "method": "GET",
                 "header": [],
                 "url": {
-                    "raw": "{{baseUrl}}/projects/status/Unstarted",
+                    "raw": "{{baseUrl}}/projects/status/1",
                     "host": [
                         "{{baseUrl}}"
                     ],
                     "path": [
                         "projects",
                         "status",
-                        "Unstarted"
+                        "1"
                     ]
                 }
             },
@@ -144,11 +144,11 @@
         {
             "name": "PATCH /projects/:projectId",
             "request": {
-                "method": "PUT",
+                "method": "PATCH",
                 "header": [],
                 "body": {
                     "mode": "raw",
-                    "raw": "{\n    \"newStatus\": \"In Progress\",\n    \"description\": \"Updated Description\"\n}",
+                    "raw": "{\n    \"newStatus\": \"0-5\",\n    \"description\": \"Updated Description\"\n}",
                     "options": {
                         "raw": {
                             "language": "json"
@@ -237,7 +237,7 @@
                 "header": [],
                 "body": {
                     "mode": "raw",
-                    "raw": "{\n    \"name\": \"Group Name\",\n    \"description\": \"Group Description\"\n}",
+                    "raw": "{\n    \"admin_id\": \"1\",\n    \"name\": \"Name\"\n}",
                     "options": {
                         "raw": {
                             "language": "json"
@@ -275,13 +275,13 @@
             "response": []
         },
         {
-            "name": "PUT /groups/:groupId",
+            "name": "PATCH /groups/:groupId",
             "request": {
-                "method": "PUT",
+                "method": "PATCH",
                 "header": [],
                 "body": {
                     "mode": "raw",
-                    "raw": "{\n    \"newDescription\": \"Updated Group Description\"\n}",
+                    "raw": "{\n    \"newName\": \"Updated name\"\n}",
                     "options": {
                         "raw": {
                             "language": "json"

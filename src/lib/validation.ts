@@ -32,7 +32,9 @@ export const usernameMustBeUnique = body('username').custom(async (username) => 
 
 
 // Project validator 
-export const validateProjectStatus = body('status').isIn(['Unstarted', 'In Progress', 'In Trouble', 'Completed']);
+export const validateProjectStatus = body('status')
+    .isInt({ min: 0, max: 5 })
+    .withMessage('Status must be an integer between 0 and 5.');
 
 // XSS sanitizer 
 export const xssSanitizer = (param: string) =>

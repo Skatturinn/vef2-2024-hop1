@@ -7,6 +7,7 @@ import { readFile } from 'fs/promises';
 
 const SCHEMA_FILE = './sql/schema.sql';
 const DROP_SCHEMA_FILE = './sql/drop.sql';
+const INSERT_SCHEMA_FILE = './sql/insert.sql';
 
 interface IUser {
 	id: number;
@@ -69,9 +70,9 @@ export async function query(q: string, values: Array<number | string | boolean |
 
 // Project functions
 
-export async function createProject(groupId: number, creatorId: number, status: string, description: string) {
-    const queryText = `INSERT INTO projects(group_id, creator_id, date_created, status, description) VALUES ($1, $2, CURRENT_DATE, $3, $4) RETURNING id;`;
-    return query(queryText, [groupId, creatorId, status, description]);
+export async function createProject(groupId: number, creatorId: number, assigned_id: number,title: string, status: number, description: string) {
+    const queryText = `INSERT INTO projects(group_id, creator_id, assigned_id, date_created, title, status,  description) VALUES ($1, $2, $3, CURRENT_DATE, $4, $5, $6) RETURNING id;`;
+    return query(queryText, [groupId, creatorId, assigned_id, title, status, description]);
 }
 
 export async function delProject(projectId: number) {
@@ -112,7 +113,7 @@ export async function getProjectsHandler(
 	}
 	throw new Error('Ekki tókst að sækja verkefni')
 }
-export async function updateProjectStatus(projectId: number, newStatus: string, description: string) {
+export async function updateProjectStatus(projectId: number, newStatus: number, description: string) {
 	const queryText = `UPDATE projects SET status = $2, description = COALESCE($3, description) WHERE id = $1 RETURNING *;`;
 	return query(queryText, [projectId, newStatus, description]);
 }
@@ -132,7 +133,7 @@ export async function getProjectById(projectId: number) {
 	return query(queryText, [projectId]);
 }
 
-export async function getProjectsByStatus(status: string) {
+export async function getProjectsByStatus(status: number) {
 	const queryText = `SELECT * FROM projects WHERE status = $1;`;
 	return query(queryText, [status]);
 }
@@ -189,6 +190,11 @@ export async function delGroup(groupId: number) {
 	return query(queryText, [groupId]);
 }
 
+export async function updateGroupById(groupId: number, newName: string) {
+	const queryText = `UPDATE Groups SET name = $2 WHERE id = $1 RETURNING *;`;
+	return query(queryText, [groupId, newName]);
+}
+
 export async function joinGroup(userId: number, groupId: number) {
     const queryText = `UPDATE Users SET group_id = $2 WHERE id = $1 RETURNING *;`;
     return query(queryText, [userId, groupId]);
@@ -196,5 +202,20 @@ export async function joinGroup(userId: number, groupId: number) {
 
 export async function getGroupById(groupId: number) {
 	const queryText = `SELECT * FROM Groups WHERE id = $1;`;
-	return query(queryText, [groupId]);
+	const result = await query(queryText, [groupId]);
+	if (result && result.rows.length === 0) {
+	  return null; 
+	}
+	return result?.rows[0];
+}
+
+export async function dropSchema(dropFile = DROP_SCHEMA_FILE) {
+	const data = await readFile(dropFile);
+
+	return query(data.toString('utf-8'));
+}
+
+export async function createSchema(schemaFile = SCHEMA_FILE) {
+	const data = await readFile(schemaFile);
+	return query(data.toString('utf-8'));
 }

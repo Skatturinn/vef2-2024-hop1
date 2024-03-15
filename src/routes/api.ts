@@ -18,6 +18,7 @@ import {
     deleteUserHandler,
     getUserByIdHandler,
     createGroupHandler,
+	updateGroupByIdHandler,
     deleteGroupHandler,
     getGroupByIdHandler,
     joinGroupHandler,
@@ -72,6 +73,10 @@ export async function index(req: Request, res: Response) {
 		}, {
 			href: '/groups/join',
 			method: ['POST'],
+		},
+		{
+			href: '/login',
+			method: ['POST'],
 		}
 	])
 }
@@ -116,6 +121,7 @@ router.get('/users/:userId', getUserByIdHandler);
 // Group routes
 router.post('/groups', createGroupHandler);
 router.delete('/groups/:groupId', authenticate, isAdmin, deleteGroupHandler);
+router.patch('/groups/:groupId', updateGroupByIdHandler);
 router.get('/groups/:groupId', getGroupByIdHandler);
 router.post('/groups/join', joinGroupHandler);
 

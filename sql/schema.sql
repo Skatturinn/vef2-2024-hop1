@@ -3,22 +3,24 @@ CREATE TABLE Users (
     isAdmin BOOLEAN NOT NULL DEFAULT false,
     username VARCHAR(255) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
-    avatar VARCHAR(500),
+    avatar VARCHAR(255),
     group_id INTEGER
 );
 
 CREATE TABLE Groups (
     id SERIAL PRIMARY KEY,
     admin_id INTEGER,
-    admin_avatar VARCHAR(255)
+    name VARCHAR(255) UNIQUE NOT NULL,
 );
 
 CREATE TABLE Projects (
     id SERIAL PRIMARY KEY,
     group_id INTEGER NOT NULL,
     creator_id INTEGER NOT NULL,
+	assigned_id INTEGER,
     date_created DATE NOT NULL,
-    status VARCHAR(255) NOT NULL,
+	title VARCHAR(64) NOT NULL,
+    status INTEGER NOT NULL check (status between 0 and 5),
     description TEXT
 );
 

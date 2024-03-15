@@ -14,6 +14,7 @@ import {
     createGroup,
     delGroup,
     joinGroup, 
+    updateGroupById,
     getGroupById,
     getProjectsHandler,
      } from './db.js';
@@ -89,8 +90,8 @@ export const createProjectHandler = [
 
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { groupId, creatorId, status, description } = req.body;
-      const project = await createProject(groupId, creatorId, status, description);
+      const { groupId, creatorId, assigned_id, title, status, description } = req.body;
+      const project = await createProject(groupId, creatorId, assigned_id, title, status, description);
       res.status(201).json(project);
     } catch (error) {
       next(error);
@@ -110,7 +111,7 @@ export const deleteProjectHandler = async (req: Request, res: Response, next: Ne
 
 export const getProjectsByGroupIdHandler = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { groupId } = req.params; // Assuming you're using route parameters
+        const { groupId } = req.params; 
         const projects = await getProjectsByGroupId(parseInt(groupId));
         res.status(200).json(projects);
     } catch (error) {
@@ -120,7 +121,7 @@ export const getProjectsByGroupIdHandler = async (req: Request, res: Response, n
 
 export const getProjectsByUserIdHandler = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { userId } = req.params; // Assuming you're using route parameters
+        const { userId } = req.params; 
         const projects = await getProjectsByUserId(parseInt(userId));
         res.status(200).json(projects);
     } catch (error) {
@@ -129,13 +130,13 @@ export const getProjectsByUserIdHandler = async (req: Request, res: Response, ne
 };
 
 export const getProjectsByStatusHandler = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const { status } = req.params; // Assuming you're using route parameters
-        const projects = await getProjectsByStatus(status);
-        res.status(200).json(projects);
-    } catch (error) {
-        next(error);
-    }
+  try {
+    const { status } = req.params; 
+    const projects = await getProjectsByStatus(parseInt(status));
+    res.status(200).json(projects);
+  } catch (error) {
+    next(error);
+  }
 };
 
 export const updateProjectStatusHandler = [
@@ -233,14 +234,34 @@ export const deleteGroupHandler = async (req: Request, res: Response, next: Next
     }
 }
 
+export const updateGroupByIdHandler = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { groupId } = req.params;
+    const { newName } = req.body;
+    const updatedGroup = await updateGroupById(parseInt(groupId), newName);
+
+    if (updatedGroup && updatedGroup.rowCount === 0) {
+      return res.status(404).json({ message: 'Group not found.' });
+    }
+
+    if (updatedGroup) {
+      res.status(200).json(updatedGroup.rows[0]);
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getGroupByIdHandler = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { groupId } = req.params; 
         const group = await getGroupById(parseInt(groupId));
-        if (!group) {
+        if (group && group.rowCount === 0) {
             return res.status(404).json({ message: 'Group not found' });
         }
-        res.status(200).json(group);
+        if(group) {
+          res.status(200).json(group);
+        }
     } catch (error) {
         next(error);
     }

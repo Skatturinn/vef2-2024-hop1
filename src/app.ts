@@ -1,7 +1,8 @@
-import express, { NextFunction, Request, Response } from 'express';
+import express, { Request, Response } from 'express';
 import passport from 'passport';
 import { cors } from './lib/cors.js';
 import { router } from './routes/api.js';
+import { create } from './setup.js';
 
 
 const app = express();
@@ -19,7 +20,7 @@ app.use((_req: Request, res: Response) => {
 	res.status(404).json({ error: 'not found' });
 });
 
-app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+app.use((err: Error, _req: Request, res: Response) => {
 	if (
 		err instanceof SyntaxError &&
 		'status' in err &&
