@@ -25,6 +25,7 @@ import {
     projectMustExist, 
     validationCheck, 
     xssSanitizer } from './validation.js';
+import { uploadImage } from '../cloudinary.js';
 
 // Middleware fyrir projects
 
@@ -136,7 +137,16 @@ export const createUserHandler = [
     try {
       const {isAdmin, username, password, avatar } = req.body;
       const hashedPassword = await hashPassword(password);
-      const user = await createUser(isAdmin, username, hashedPassword, avatar);
+      let avatarUrl = '';
+      if (avatar) {
+        const uploadResult = await uploadImage(avatar);
+        if (typeof uploadResult === 'string') {
+          avatarUrl = uploadResult;
+        } else {
+          avatarUrl = uploadResult;
+        }
+      }
+      const user = await createUser(isAdmin, username, hashedPassword, avatarUrl);
       res.status(201).json(user);
     } catch (error) {
       next(error);

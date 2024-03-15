@@ -98,7 +98,7 @@ router.post('/login', async (req, res) => {
 // Project routes
 router.get('/projects', getAllProjects);
 router.post('/projects', createProjectHandler);
-router.delete('/projects/:projectId', deleteProjectHandler);
+router.delete('/projects/:projectId', authenticate, isAdmin, deleteProjectHandler);
 router.get('/projects/group/:groupId', getProjectsByGroupIdHandler);
 router.get('/projects/user/:userId', getProjectsByUserIdHandler);
 router.get('/projects/status/:status', getProjectsByStatusHandler);

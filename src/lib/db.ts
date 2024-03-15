@@ -1,6 +1,7 @@
 import pg from 'pg';
 import { environment } from './environment.js';
 import { logger } from './logger.js';
+import { deleteImage } from '../cloudinary.js';
 import { ILogger, logger as loggerSingleton } from './logger.js';
 
 const SCHEMA_FILE = './sql/schema.sql';
@@ -121,13 +122,18 @@ export async function loginUser(username: string): Promise<IUser | null> {
 	}
   }
 
-export async function createUser(isAdmin: boolean, username: string, password: string, avatar: string) {
-    console.log(`Executing query with params:`, {isAdmin, username, password, avatar});
+export async function createUser(isAdmin: boolean, username: string, password: string, avatarUrl: string) {
+    console.log(`Executing query with params:`, {isAdmin, username, password, avatarUrl});
 	const queryText = `INSERT INTO Users(isAdmin, username, password, avatar) VALUES ($1, $2, $3, $4) RETURNING id;`;
-    return query(queryText, [isAdmin, username, password, avatar]);
+    return query(queryText, [isAdmin, username, password, avatarUrl]);
 }
 
 export async function delUser(userId: number) {
+	const userRes = await query('SELECT avatar FROM Users WHERE id = $1', [userId]);
+	const avatarPublicId = userRes?.rows[0]?.avatar;
+	if (avatarPublicId) {
+		await deleteImage(avatarPublicId);
+	}
 	const queryText = `DELETE FROM Users WHERE id = $1;`;
 	return query(queryText, [userId]);
 }
