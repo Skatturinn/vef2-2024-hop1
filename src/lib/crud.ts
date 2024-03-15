@@ -108,36 +108,6 @@ export const deleteProjectHandler = async (req: Request, res: Response, next: Ne
 	}
 }
 
-export const getProjectsByGroupIdHandler = async (req: Request, res: Response, next: NextFunction) => {
-	try {
-		const { groupId } = req.params; // Assuming you're using route parameters
-		const projects = await getProjectsByGroupId(parseInt(groupId));
-		res.status(200).json(projects);
-	} catch (error) {
-		next(error);
-	}
-};
-
-export const getProjectsByUserIdHandler = async (req: Request, res: Response, next: NextFunction) => {
-	try {
-		const { userId } = req.params; // Assuming you're using route parameters
-		const projects = await getProjectsByUserId(parseInt(userId));
-		res.status(200).json(projects);
-	} catch (error) {
-		next(error);
-	}
-};
-
-export const getProjectsByStatusHandler = async (req: Request, res: Response, next: NextFunction) => {
-	try {
-		const { status } = req.params; // Assuming you're using route parameters
-		const projects = await getProjectsByStatus(status);
-		res.status(200).json(projects);
-	} catch (error) {
-		next(error);
-	}
-};
-
 export const updateProjectStatusHandler = [
 	projectMustExist,
 	validateProjectStatus,
