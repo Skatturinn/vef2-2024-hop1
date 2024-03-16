@@ -64,9 +64,9 @@ export async function query(q: string, values: Array<number | string | boolean |
 
 // Project functions
 
-export async function createProject(groupId: number, creatorId: number, assigned_id: number,title: string, status: number, description: string) {
-    const queryText = `INSERT INTO projects(group_id, creator_id, assigned_id, date_created, title, status,  description) VALUES ($1, $2, $3, CURRENT_DATE, $4, $5, $6) RETURNING id;`;
-    const result = query(queryText, [groupId, creatorId, assigned_id, title, status, description]);
+export async function createProject(groupId: number, creatorId: number, assigned_id: number, title: string, status: number, description: string) {
+	const queryText = `INSERT INTO projects(group_id, creator_id, assigned_id, date_created, title, status,  description) VALUES ($1, $2, $3, CURRENT_DATE, $4, $5, $6) RETURNING id;`;
+	const result = query(queryText, [groupId, creatorId, assigned_id, title, status, description]);
 	return result || null
 }
 
@@ -158,9 +158,9 @@ export async function loginUser(username: string): Promise<IUser | null> {
 }
 
 export async function createUser(isAdmin: boolean, username: string, password: string, avatarUrl: string) {
-    console.log(`Executing query with params:`, {isAdmin, username, password, avatarUrl});
+	console.log(`Executing query with params:`, { isAdmin, username, password, avatarUrl });
 	const queryText = `INSERT INTO Users(isAdmin, username, password, avatar) VALUES ($1, $2, $3, $4) RETURNING id;`;
-    return query(queryText, [isAdmin, username, password, avatarUrl]);
+	return query(queryText, [isAdmin, username, password, avatarUrl]);
 }
 
 export async function delUser(userId: number) {
@@ -205,16 +205,6 @@ export async function delGroup(groupId: number) {
 	return query(queryText, [groupId]);
 }
 
-export async function updateGroupById(groupId: number, newName: string) {
-	const queryText = `UPDATE Groups SET name = $2 WHERE id = $1 RETURNING *;`;
-	return query(queryText, [groupId, newName]);
-}
-
-export async function joinGroup(userId: number, groupId: number) {
-    const queryText = `UPDATE Users SET group_id = $2 WHERE id = $1 RETURNING *;`;
-    return query(queryText, [userId, groupId]);
-}
-
 export async function getGroupById(groupId: number) {
 	const queryText = `SELECT * FROM Groups WHERE id = $1;`;
 	const result = await query(queryText, [groupId]);
@@ -231,6 +221,11 @@ export async function dropSchema(dropFile = DROP_SCHEMA_FILE) {
 }
 
 export async function createSchema(schemaFile = SCHEMA_FILE) {
+	const data = await readFile(schemaFile);
+	return query(data.toString('utf-8'));
+}
+
+export async function insertSchema(schemaFile = INSERT_SCHEMA_FILE) {
 	const data = await readFile(schemaFile);
 	return query(data.toString('utf-8'));
 }

@@ -13,8 +13,7 @@ import {
 	getProjectsHandler,
 	getUsersPage,
 	getGroups,
-	conditionalUpdate,
-	joinGroup
+	conditionalUpdate
 } from './db.js';
 import {
 	stringValidator,
@@ -88,15 +87,15 @@ export const createProjectHandler = [
 	xssSanitizer('description'),
 	validationCheck,
 
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const { groupId, creatorId, assigned_id, title, status, description } = req.body;
-      const project = await createProject(groupId, creatorId, assigned_id, title, status, description);
-      res.status(201).json(project);
-    } catch (error) {
-      next(error);
-    }
-  }
+	async (req: Request, res: Response, next: NextFunction) => {
+		try {
+			const { groupId, creatorId, assigned_id, title, status, description } = req.body;
+			const project = await createProject(groupId, creatorId, assigned_id, title, status, description);
+			res.status(201).json(project);
+		} catch (error) {
+			next(error);
+		}
+	}
 ];
 
 export const deleteProjectHandler = async (req: Request, res: Response, next: NextFunction) => {
@@ -120,7 +119,7 @@ export async function updateProject(
 		res.status(400).json('fann ekki verkefni með umbeðið id');
 		return
 	}
-	const {group_id, assigned_id, title, status, description,} = req.body;
+	const { group_id, assigned_id, title, status, description, } = req.body;
 	const fields = [
 		typeof group_id === 'string' && group_id ? 'group_id' : null,
 		typeof assigned_id === 'string' && assigned_id ? 'assigned_id' : null,
@@ -169,7 +168,7 @@ export async function updateProject(
 }
 
 export const patchProject = [
-	atLeastOneBodyValueValidator(['groupId', 'assigned_id','title', 'status', 'description']),
+	atLeastOneBodyValueValidator(['group_id', 'assigned_id', 'title', 'status', 'description']),
 	stringValidator({ field: 'title', minLength: 3, maxLength: 64, optional: false }), // min 3 max 128
 	stringValidator({ field: 'description', optional: true }),
 	body('group_id')
@@ -184,8 +183,8 @@ export const patchProject = [
 		.optional(true),
 	body('status')
 		.trim()
-		.isInt({ min: 0, max: 5 })
-		.withMessage('status þarf að vera heiltala á bilinu 0 til 5')
+		.isInt({ min: 0, max: 3 })
+		.withMessage('status þarf að vera heiltala á bilinu 0 til 3')
 		.optional(true),
 	xssSanitizer('title'),
 	xssSanitizer('description'),
@@ -225,30 +224,30 @@ export const getUsers = async (req: Request, res: Response) => {
 
 
 export const createUserHandler = [
-  usernameMustBeUnique,
-  stringValidator({ field: 'username', minLength: 3, maxLength: 255 }),
-  stringValidator({ field: 'password', minLength: 6 }), 
-  xssSanitizer('username'),
-  validationCheck,
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const {isAdmin, username, password, avatar } = req.body;
-      const hashedPassword = await hashPassword(password);
-      let avatarUrl = '';
-      if (avatar) {
-        const uploadResult = await uploadImage(avatar);
-        if (typeof uploadResult === 'string') {
-          avatarUrl = uploadResult;
-        } else {
-          avatarUrl = uploadResult;
-        }
-      }
-      const user = await createUser(isAdmin, username, hashedPassword, avatarUrl);
-      res.status(201).json(user);
-    } catch (error) {
-      next(error);
-    }
-  }
+	usernameMustBeUnique,
+	stringValidator({ field: 'username', minLength: 3, maxLength: 255 }),
+	stringValidator({ field: 'password', minLength: 6 }),
+	xssSanitizer('username'),
+	validationCheck,
+	async (req: Request, res: Response, next: NextFunction) => {
+		try {
+			const { isAdmin, username, password, avatar } = req.body;
+			const hashedPassword = await hashPassword(password);
+			let avatarUrl = '';
+			if (avatar) {
+				const uploadResult = await uploadImage(avatar);
+				if (typeof uploadResult === 'string') {
+					avatarUrl = uploadResult;
+				} else {
+					avatarUrl = uploadResult;
+				}
+			}
+			const user = await createUser(isAdmin, username, hashedPassword, avatarUrl);
+			res.status(201).json(user);
+		} catch (error) {
+			next(error);
+		}
+	}
 ];
 
 
@@ -392,21 +391,21 @@ export const deleteGroupHandler = async (req: Request, res: Response, next: Next
 }
 
 export const getGroupByIdHandler = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const { groupId } = req.params; 
-        const group = await getGroupById(parseInt(groupId));
-        if (group && group.rowCount === 0) {
-            return res.status(404).json({ message: 'Group not found' });
-        }
-        if(group) {
-          res.status(200).json(group);
-        }
-    } catch (error) {
-        next(error);
-    }
+	try {
+		const { groupId } = req.params;
+		const group = await getGroupById(parseInt(groupId));
+		if (group && group.rowCount === 0) {
+			return res.status(404).json({ message: 'Group not found' });
+		}
+		if (group) {
+			res.status(200).json(group);
+		}
+	} catch (error) {
+		next(error);
+	}
 };
 
-export async function updateGroup(req: Request, res: Response, next: NextFunction) {
+export async function updateGroup(req: Request, res: Response) {
 	const { groupId } = req.params;
 	const id = Number.parseInt(groupId);
 	const group = await getGroupById(id);
@@ -437,23 +436,6 @@ export async function updateGroup(req: Request, res: Response, next: NextFunctio
 	res.status(200).json(updated);
 	return
 
-}
-
-export const userJoinGroup = async (req: Request, res: Response, next: NextFunction) => {
-	const { userId, groupId } = req.body;
-	const user = await getUserById(Number.parseInt(userId));
-	const group = await getGroupById(Number.parseInt(groupId));
-	if (!user || !group) {
-		res.status(400).json({ error: 'notandi eða hópur fannst ekki' });
-		return
-	}
-	const joined = await joinGroup(Number.parseInt(userId), Number.parseInt(groupId));
-	if (!joined) {
-		res.status(500).json({ error: 'Ekki tókst að skrá notanda í hóp' });
-		return
-	}
-	res.status(200).json(joined);
-	return
 }
 
 export const patchGroup = [

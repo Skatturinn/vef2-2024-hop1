@@ -20,8 +20,7 @@ import {
 	getGroupsResponse,
 	patchProject,
 	patchUser,
-	patchGroup,
-	userJoinGroup
+	patchGroup
 } from '../lib/crud.js';
 
 dotenv.config();
@@ -100,7 +99,7 @@ export async function index(req: Request, res: Response) {
 		}, {
 			href: '/groups/:groupId',
 			method: ['GET', 'PATCH', 'DELETE'],
-		},  {
+		}, {
 			href: '/groups/join',
 			method: ['POST'],
 		},
@@ -153,4 +152,3 @@ router.post('/groups', createGroupHandler);
 router.delete('/groups/:groupId', authenticate, isAdmin, deleteGroupHandler);
 router.get('/groups/:groupId', getGroupByIdHandler);
 router.patch('/groups/:groupId', authenticate, isAdmin, patchGroup);
-router.post('/groups/join', userJoinGroup);
