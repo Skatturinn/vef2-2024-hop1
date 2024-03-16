@@ -3,7 +3,7 @@ import express, { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { loginUser } from '../lib/db.js';
-import { authenticate, isAdmin } from '../lib/auth.js';
+import { authenticate, isAdmin, isInGroup } from '../lib/auth.js';
 import { catchErrors } from '../lib/catch-errors.js';
 import {
 	getProjects,
@@ -21,6 +21,7 @@ import {
 	patchProject,
 	patchUser,
 	patchGroup,
+	userJoinGroup
 } from '../lib/crud.js';
 
 dotenv.config();
@@ -140,16 +141,16 @@ router.get('/projects/:projectId', getProjectByIdHandler);
 router.patch('/projects/:projectId', patchProject);
 
 // User routes
-router.get('/users', catchErrors(getUsers))
+router.get('/users', catchErrors(getUsers));
 router.post('/users', createUserHandler);
 router.delete('/users/:userId', authenticate, isAdmin, deleteUserHandler);
 router.get('/users/:userId', getUserByIdHandler);
-router.patch('/user/:userId', patchUser)
+router.patch('/user/:userId', patchUser);
 
 // Group routes
-router.get('/groups', catchErrors(getGroupsResponse))
+router.get('/groups', catchErrors(getGroupsResponse));
 router.post('/groups', createGroupHandler);
 router.delete('/groups/:groupId', authenticate, isAdmin, deleteGroupHandler);
-router.patch('/groups/:groupId', updateGroupByIdHandler);
 router.get('/groups/:groupId', getGroupByIdHandler);
-router.patch('/groups/:groupId', patchGroup)
+router.patch('/groups/:groupId', authenticate, isAdmin, patchGroup);
+router.post('/groups/join', userJoinGroup);

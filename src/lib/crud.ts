@@ -13,7 +13,8 @@ import {
 	getProjectsHandler,
 	getUsersPage,
 	getGroups,
-	conditionalUpdate
+	conditionalUpdate,
+	joinGroup
 } from './db.js';
 import {
 	stringValidator,
@@ -112,36 +113,47 @@ export async function updateProject(
 	req: Request,
 	res: Response
 ) {
-	const { ProjectId } = req.params;
-	const id = Number.parseInt(ProjectId)
+	const { projectId } = req.params;
+	const id = Number.parseInt(projectId)
 	const project = await getProjectById(id);
 	if (!project && !project?.rows[0]) {
 		res.status(400).json('fann ekki verkefni með umbeðið id');
 		return
 	}
-	const { title, description, group_id, assigned_id, status } = req.body;
+	const {group_id, assigned_id, title, status, description,} = req.body;
 	const fields = [
-		typeof title === 'string' && title ? 'title' : null,
-		typeof description === 'string' && description ? 'description' : null,
 		typeof group_id === 'string' && group_id ? 'group_id' : null,
 		typeof assigned_id === 'string' && assigned_id ? 'assigned_id' : null,
-		typeof status === 'string' && status ? 'status' : null
+		typeof title === 'string' && title ? 'title' : null,
+		typeof status === 'string' && status ? 'status' : null,
+		typeof description === 'string' && description ? 'description' : null
 	]
 	const villa = [];
-	assigned_id && await getUserById(Number.parseInt(assigned_id)) && villa.push('notanda fyrir assigned_id')
-	group_id && await getGroupById(Number.parseInt(group_id)) && villa.push('hóp fyrir group_id');
+	if (assigned_id) {
+		const user = await getUserById(Number.parseInt(assigned_id));
+		if (!user) {
+			villa.push('assigned_id')
+		}
+	}
+	if (group_id) {
+		const group = await getGroupById(Number.parseInt(group_id));
+		if (!group) {
+			villa.push('group_id')
+		}
+	}
 	if (villa.length > 0) {
 		res.status(400).json({ error: `fann ekki eftirfarandi: ${villa.join(', ')}` })
 		return
 	}
 	const values = [
-		typeof title === 'string' && title || null,
-		typeof description === 'string' && description || null,
 		typeof group_id === 'string' && Number.parseInt(group_id) || null,
 		typeof assigned_id === 'string' && Number.parseInt(assigned_id) || null,
-		typeof status === 'string' && Number.parseInt(status) || null
+		typeof title === 'string' && title || null,
+		typeof status === 'string' && Number.parseInt(status) || null,
+		typeof description === 'string' && description || null,
 	]
 
+	console.log(values, 'values')
 	const updated = await conditionalUpdate(
 		'projects',
 		id,
@@ -158,7 +170,7 @@ export async function updateProject(
 }
 
 export const patchProject = [
-	atLeastOneBodyValueValidator(['title', 'description', 'group_id', 'id', 'assigned_id', 'status']),
+	atLeastOneBodyValueValidator(['groupId', 'assigned_id','title', 'status', 'description']),
 	stringValidator({ field: 'title', minLength: 3, maxLength: 64, optional: false }), // min 3 max 128
 	stringValidator({ field: 'description', optional: true }),
 	body('group_id')
@@ -173,8 +185,8 @@ export const patchProject = [
 		.optional(true),
 	body('status')
 		.trim()
-		.isInt({ min: 0, max: 3 })
-		.withMessage('status þarf að vera heiltala á bilinu 0 til 3')
+		.isInt({ min: 0, max: 5 })
+		.withMessage('status þarf að vera heiltala á bilinu 0 til 5')
 		.optional(true),
 	xssSanitizer('title'),
 	xssSanitizer('description'),
@@ -263,6 +275,7 @@ export const getUserByIdHandler = async (req: Request, res: Response, next: Next
 		next(error);
 	}
 };
+
 export async function updateUser(req: Request, res: Response, next: NextFunction) {
 	const { userId } = req.params;
 	const user = Number(userId) > 0 && await getUserById(Number.parseInt(userId));
@@ -379,24 +392,6 @@ export const deleteGroupHandler = async (req: Request, res: Response, next: Next
 	}
 }
 
-export const updateGroupByIdHandler = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { groupId } = req.params;
-    const { newName } = req.body;
-    const updatedGroup = await updateGroupById(parseInt(groupId), newName);
-
-    if (updatedGroup && updatedGroup.rowCount === 0) {
-      return res.status(404).json({ message: 'Group not found.' });
-    }
-
-    if (updatedGroup) {
-      res.status(200).json(updatedGroup.rows[0]);
-    }
-  } catch (error) {
-    next(error);
-  }
-};
-
 export const getGroupByIdHandler = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { groupId } = req.params; 
@@ -420,14 +415,14 @@ export async function updateGroup(req: Request, res: Response, next: NextFunctio
 		res.status(400).json('fann ekki hóp með viðeigandi id');
 		return
 	}
-	const { admin_id, admin_avatar } = req.body;
+	const { admin_id, name } = req.body;
 	const fields = [
 		typeof admin_id === 'string' && admin_id ? 'admin_id' : null,
-		typeof admin_avatar === 'string' && admin_avatar ? 'admin_avatar' : null
+		typeof name === 'string' && name ? 'name' : null
 	];
 	const values = [
 		typeof admin_id === 'string' && admin_id || null,
-		typeof admin_avatar === 'string' && admin_avatar || null
+		typeof name === 'string' && name || null
 	]
 	const updated = await conditionalUpdate(
 		'groups',
@@ -445,18 +440,35 @@ export async function updateGroup(req: Request, res: Response, next: NextFunctio
 
 }
 
+export const userJoinGroup = async (req: Request, res: Response, next: NextFunction) => {
+	const { userId, groupId } = req.body;
+	const user = await getUserById(Number.parseInt(userId));
+	const group = await getGroupById(Number.parseInt(groupId));
+	if (!user || !group) {
+		res.status(400).json({ error: 'notandi eða hópur fannst ekki' });
+		return
+	}
+	const joined = await joinGroup(Number.parseInt(userId), Number.parseInt(groupId));
+	if (!joined) {
+		res.status(500).json({ error: 'Ekki tókst að skrá notanda í hóp' });
+		return
+	}
+	res.status(200).json(joined);
+	return
+}
+
 export const patchGroup = [
-	atLeastOneBodyValueValidator(['admin_id', 'admin_avatar']),
-	stringValidator({ field: 'admin_avatar', minLength: 0, maxLength: 255, optional: true }),
+	atLeastOneBodyValueValidator(['admin_id', 'name']),
+	stringValidator({ field: 'name', minLength: 0, maxLength: 255, optional: true }),
 	body('admin_id')
 		.trim()
 		.isInt({ min: 1 })
-		.withMessage('adming_id þarf að vera heiltala stærri en 1'),
+		.withMessage('admin_id þarf að vera heiltala stærri en 1'),
 	xssSanitizer('admin_id'),
-	xssSanitizer('admin_avatar'),
+	xssSanitizer('name'),
 	validationCheck,
 	genericSanitizer('admin_id'),
-	genericSanitizer('admin_avatar'),
+	genericSanitizer('name'),
 	updateGroup
 ]
 

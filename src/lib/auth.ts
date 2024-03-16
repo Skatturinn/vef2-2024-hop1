@@ -52,6 +52,15 @@ export function isAdmin(req: Request, res: Response, next: NextFunction): void {
 	}
 }
 
+export function isInGroup(req: Request, res: Response, next: NextFunction): void {
+	console.log('Checking if in group...');
+	if (req.user && req.user.group_id) {
+		next();
+	} else {
+		res.status(403).json({ message: "Insufficient permissions" });
+	}
+}
+
 export function authenticate(req: Request, res: Response, next: NextFunction): void {
 	console.log('Authenticating...');
 	passport.authenticate('jwt', { session: false }, (err: Error, user: Express.User | null) => {

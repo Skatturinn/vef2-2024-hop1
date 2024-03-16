@@ -1,5 +1,4 @@
 import express, { Request, Response } from 'express';
-import express, { Request, Response } from 'express';
 import passport from 'passport';
 import { cors } from './lib/cors.js';
 import { router } from './routes/api.js';
