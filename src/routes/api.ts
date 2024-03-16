@@ -99,9 +99,6 @@ export async function index(req: Request, res: Response) {
 		}, {
 			href: '/groups/:groupId',
 			method: ['GET', 'PATCH', 'DELETE'],
-		}, {
-			href: '/groups/join',
-			method: ['POST'],
 		},
 		{
 			href: '/login',
