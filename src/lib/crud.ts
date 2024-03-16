@@ -3,14 +3,12 @@ import { hashPassword } from './authUtils.js';
 import {
 	createProject,
 	delProject,
-	updateProjectStatus,
 	getProjectById,
 	createUser,
 	delUser,
 	getUserById,
 	createGroup,
 	delGroup,
-	joinGroup,
 	getGroupById,
 	getProjectsHandler,
 	getUsersPage,
@@ -431,17 +429,4 @@ export const patchGroup = [
 	genericSanitizer('admin_avatar'),
 	updateGroup
 ]
-
-export const joinGroupHandler = [
-	groupMustExist,
-	async (req: Request, res: Response, next: NextFunction) => {
-		try {
-			const { userId, group_id } = req.body;
-			const user = await joinGroup(userId, group_id);
-			res.status(200).json(user);
-		} catch (error) {
-			next(error);
-		}
-	}
-];
 

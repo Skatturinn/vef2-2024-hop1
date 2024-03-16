@@ -108,11 +108,6 @@ export async function getProjectsHandler(
 	}
 }
 
-export async function updateProjectStatus(projectId: number, newStatus: string, description: string) {
-	const queryText = `UPDATE projects SET status = $2, description = COALESCE($3, description) WHERE id = $1 RETURNING *;`;
-	return query(queryText, [projectId, newStatus, description]);
-}
-
 export async function getProjectsByGroupId(groupId: number) {
 	const queryText = `SELECT * FROM projects WHERE group_id = $1;`;
 	return query(queryText, [groupId]);
@@ -201,11 +196,6 @@ export async function createGroup(id: number, admin_id: number) {
 export async function delGroup(groupId: number) {
 	const queryText = `DELETE FROM Groups WHERE id = $1;`;
 	return query(queryText, [groupId]);
-}
-
-export async function joinGroup(userId: number, groupId: number) {
-	const queryText = `UPDATE Users SET group_id = $2 WHERE id = $1 RETURNING *;`;
-	return query(queryText, [userId, groupId]);
 }
 
 export async function getGroupById(groupId: number) {
