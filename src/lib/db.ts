@@ -1,11 +1,13 @@
 import pg from 'pg';
 import { environment } from './environment.js';
 import { logger } from './logger.js';
+import { deleteImage } from '../cloudinary.js';
 import { readFile } from 'fs/promises';
 // import { ILogger, logger as loggerSingleton } from './logger.js';
 
 const SCHEMA_FILE = './sql/schema.sql';
 const DROP_SCHEMA_FILE = './sql/drop.sql';
+const INSERT_SCHEMA_FILE = './sql/insert.sql';
 
 interface IUser {
 	id: number;
@@ -62,10 +64,10 @@ export async function query(q: string, values: Array<number | string | boolean |
 
 // Project functions
 
-export async function createProject(groupId: number, creatorId: number, status: number, description: string, title: string) {
-	const queryText = `INSERT INTO projects(group_id, creator_id, date_created, status, description, title) VALUES ($1, $2, CURRENT_DATE, $3, $4, $5) RETURNING *;`;
-	const result = query(queryText, [groupId, creatorId, status, description, title]);
-	return result || null;
+export async function createProject(groupId: number, creatorId: number, assigned_id: number, title: string, status: number, description: string) {
+	const queryText = `INSERT INTO projects(group_id, creator_id, assigned_id, date_created, title, status,  description) VALUES ($1, $2, $3, CURRENT_DATE, $4, $5, $6) RETURNING id;`;
+	const result = query(queryText, [groupId, creatorId, assigned_id, title, status, description]);
+	return result || null
 }
 
 export async function delProject(projectId: number) {
@@ -127,7 +129,7 @@ export async function getProjectById(projectId: number) {
 	return null;
 }
 
-export async function getProjectsByStatus(status: string) {
+export async function getProjectsByStatus(status: number) {
 	const queryText = `SELECT * FROM projects WHERE status = $1;`;
 	return query(queryText, [status]);
 }
@@ -155,13 +157,18 @@ export async function loginUser(username: string): Promise<IUser | null> {
 	}
 }
 
-export async function createUser(isAdmin: boolean, username: string, password: string, avatar: string) {
-	console.log(`Executing query with params:`, { isAdmin, username, password, avatar });
+export async function createUser(isAdmin: boolean, username: string, password: string, avatarUrl: string) {
+	console.log(`Executing query with params:`, { isAdmin, username, password, avatarUrl });
 	const queryText = `INSERT INTO Users(isAdmin, username, password, avatar) VALUES ($1, $2, $3, $4) RETURNING id;`;
-	return query(queryText, [isAdmin, username, password, avatar]);
+	return query(queryText, [isAdmin, username, password, avatarUrl]);
 }
 
 export async function delUser(userId: number) {
+	const userRes = await query('SELECT avatar FROM Users WHERE id = $1', [userId]);
+	const avatarPublicId = userRes?.rows[0]?.avatar;
+	if (avatarPublicId) {
+		await deleteImage(avatarPublicId);
+	}
 	const queryText = `DELETE FROM Users WHERE id = $1;`;
 	return query(queryText, [userId]);
 }
@@ -214,6 +221,11 @@ export async function dropSchema(dropFile = DROP_SCHEMA_FILE) {
 }
 
 export async function createSchema(schemaFile = SCHEMA_FILE) {
+	const data = await readFile(schemaFile);
+	return query(data.toString('utf-8'));
+}
+
+export async function insertSchema(schemaFile = INSERT_SCHEMA_FILE) {
 	const data = await readFile(schemaFile);
 	return query(data.toString('utf-8'));
 }

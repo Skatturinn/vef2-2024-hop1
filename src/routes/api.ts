@@ -3,7 +3,7 @@ import express, { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { loginUser } from '../lib/db.js';
-import { authenticate, isAdmin } from '../lib/auth.js';
+import { authenticate, isAdmin, isInGroup } from '../lib/auth.js';
 import { catchErrors } from '../lib/catch-errors.js';
 import {
 	getProjects,
@@ -20,7 +20,7 @@ import {
 	getGroupsResponse,
 	patchProject,
 	patchUser,
-	patchGroup,
+	patchGroup
 } from '../lib/crud.js';
 
 dotenv.config();
@@ -99,6 +99,10 @@ export async function index(req: Request, res: Response) {
 		}, {
 			href: '/groups/:groupId',
 			method: ['GET', 'PATCH', 'DELETE'],
+		},
+		{
+			href: '/login',
+			method: ['POST'],
 		}
 	])
 }
@@ -128,20 +132,20 @@ router.post('/login', async (req, res) => {
 // Project routes
 router.get('/projects', catchErrors(getProjects));
 router.post('/projects', createProjectHandler);
-router.delete('/projects/:projectId', deleteProjectHandler);
+router.delete('/projects/:projectId', authenticate, isAdmin, deleteProjectHandler);
 router.get('/projects/:projectId', getProjectByIdHandler);
-router.patch('/projects/:projectId', patchProject);
+router.patch('/projects/:projectId', authenticate, isInGroup, patchProject);
 
 // User routes
-router.get('/users', catchErrors(getUsers))
+router.get('/users', catchErrors(getUsers));
 router.post('/users', createUserHandler);
 router.delete('/users/:userId', authenticate, isAdmin, deleteUserHandler);
 router.get('/users/:userId', getUserByIdHandler);
-router.patch('/user/:userId', patchUser)
+router.patch('/user/:userId', patchUser);
 
 // Group routes
-router.get('/groups', catchErrors(getGroupsResponse))
+router.get('/groups', catchErrors(getGroupsResponse));
 router.post('/groups', createGroupHandler);
 router.delete('/groups/:groupId', authenticate, isAdmin, deleteGroupHandler);
 router.get('/groups/:groupId', getGroupByIdHandler);
-router.patch('/groups/:groupId', patchGroup)
+router.patch('/groups/:groupId', authenticate, isAdmin, patchGroup);

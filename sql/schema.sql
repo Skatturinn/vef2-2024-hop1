@@ -10,7 +10,7 @@ CREATE TABLE Users (
 CREATE TABLE Groups (
     id SERIAL PRIMARY KEY,
     admin_id INTEGER,
-    admin_avatar VARCHAR(255)
+    name VARCHAR(255) UNIQUE NOT NULL,
 );
 
 CREATE TABLE Projects (

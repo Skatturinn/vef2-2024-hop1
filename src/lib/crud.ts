@@ -25,6 +25,7 @@ import {
 	genericSanitizer,
 	atLeastOneBodyValueValidator
 } from './validation.js';
+import { uploadImage } from '../cloudinary.js';
 import { body } from 'express-validator';
 
 // Middleware fyrir projects
@@ -88,8 +89,8 @@ export const createProjectHandler = [
 
 	async (req: Request, res: Response, next: NextFunction) => {
 		try {
-			const { group_id, creator_id, status, description, title } = req.body;
-			const project = await createProject(group_id, creator_id, status, description, title);
+			const { groupId, creatorId, assigned_id, title, status, description } = req.body;
+			const project = await createProject(groupId, creatorId, assigned_id, title, status, description);
 			res.status(201).json(project);
 		} catch (error) {
 			next(error);
@@ -111,34 +112,44 @@ export async function updateProject(
 	req: Request,
 	res: Response
 ) {
-	const { ProjectId } = req.params;
-	const id = Number.parseInt(ProjectId)
+	const { projectId } = req.params;
+	const id = Number.parseInt(projectId)
 	const project = await getProjectById(id);
 	if (!project && !project?.rows[0]) {
 		res.status(400).json('fann ekki verkefni með umbeðið id');
 		return
 	}
-	const { title, description, group_id, assigned_id, status } = req.body;
+	const { group_id, assigned_id, title, status, description, } = req.body;
 	const fields = [
-		typeof title === 'string' && title ? 'title' : null,
-		typeof description === 'string' && description ? 'description' : null,
 		typeof group_id === 'string' && group_id ? 'group_id' : null,
 		typeof assigned_id === 'string' && assigned_id ? 'assigned_id' : null,
-		typeof status === 'string' && status ? 'status' : null
+		typeof title === 'string' && title ? 'title' : null,
+		typeof status === 'string' && status ? 'status' : null,
+		typeof description === 'string' && description ? 'description' : null
 	]
 	const villa = [];
-	assigned_id && await getUserById(Number.parseInt(assigned_id)) && villa.push('notanda fyrir assigned_id')
-	group_id && await getGroupById(Number.parseInt(group_id)) && villa.push('hóp fyrir group_id');
+	if (assigned_id) {
+		const user = await getUserById(Number.parseInt(assigned_id));
+		if (!user) {
+			villa.push('assigned_id')
+		}
+	}
+	if (group_id) {
+		const group = await getGroupById(Number.parseInt(group_id));
+		if (!group) {
+			villa.push('group_id')
+		}
+	}
 	if (villa.length > 0) {
 		res.status(400).json({ error: `fann ekki eftirfarandi: ${villa.join(', ')}` })
 		return
 	}
 	const values = [
-		typeof title === 'string' && title || null,
-		typeof description === 'string' && description || null,
 		typeof group_id === 'string' && Number.parseInt(group_id) || null,
 		typeof assigned_id === 'string' && Number.parseInt(assigned_id) || null,
-		typeof status === 'string' && Number.parseInt(status) || null
+		typeof title === 'string' && title || null,
+		typeof status === 'string' && status || null,
+		typeof description === 'string' && description || null,
 	]
 
 	const updated = await conditionalUpdate(
@@ -157,7 +168,7 @@ export async function updateProject(
 }
 
 export const patchProject = [
-	atLeastOneBodyValueValidator(['title', 'description', 'group_id', 'id', 'assigned_id', 'status']),
+	atLeastOneBodyValueValidator(['group_id', 'assigned_id', 'title', 'status', 'description']),
 	stringValidator({ field: 'title', minLength: 3, maxLength: 64, optional: false }), // min 3 max 128
 	stringValidator({ field: 'description', optional: true }),
 	body('group_id')
@@ -222,7 +233,16 @@ export const createUserHandler = [
 		try {
 			const { isAdmin, username, password, avatar } = req.body;
 			const hashedPassword = await hashPassword(password);
-			const user = await createUser(isAdmin, username, hashedPassword, avatar);
+			let avatarUrl = '';
+			if (avatar) {
+				const uploadResult = await uploadImage(avatar);
+				if (typeof uploadResult === 'string') {
+					avatarUrl = uploadResult;
+				} else {
+					avatarUrl = uploadResult;
+				}
+			}
+			const user = await createUser(isAdmin, username, hashedPassword, avatarUrl);
 			res.status(201).json(user);
 		} catch (error) {
 			next(error);
@@ -253,6 +273,7 @@ export const getUserByIdHandler = async (req: Request, res: Response, next: Next
 		next(error);
 	}
 };
+
 export async function updateUser(req: Request, res: Response, next: NextFunction) {
 	const { userId } = req.params;
 	const user = Number(userId) > 0 && await getUserById(Number.parseInt(userId));
@@ -371,18 +392,20 @@ export const deleteGroupHandler = async (req: Request, res: Response, next: Next
 
 export const getGroupByIdHandler = async (req: Request, res: Response, next: NextFunction) => {
 	try {
-		const { group_id } = req.params;
-		const group = await getGroupById(parseInt(group_id));
-		if (!group) {
+		const { groupId } = req.params;
+		const group = await getGroupById(parseInt(groupId));
+		if (group && group.rowCount === 0) {
 			return res.status(404).json({ message: 'Group not found' });
 		}
-		res.status(200).json(group);
+		if (group) {
+			res.status(200).json(group);
+		}
 	} catch (error) {
 		next(error);
 	}
 };
 
-export async function updateGroup(req: Request, res: Response, next: NextFunction) {
+export async function updateGroup(req: Request, res: Response) {
 	const { groupId } = req.params;
 	const id = Number.parseInt(groupId);
 	const group = await getGroupById(id);
@@ -390,14 +413,14 @@ export async function updateGroup(req: Request, res: Response, next: NextFunctio
 		res.status(400).json('fann ekki hóp með viðeigandi id');
 		return
 	}
-	const { admin_id, admin_avatar } = req.body;
+	const { admin_id, name } = req.body;
 	const fields = [
 		typeof admin_id === 'string' && admin_id ? 'admin_id' : null,
-		typeof admin_avatar === 'string' && admin_avatar ? 'admin_avatar' : null
+		typeof name === 'string' && name ? 'name' : null
 	];
 	const values = [
 		typeof admin_id === 'string' && admin_id || null,
-		typeof admin_avatar === 'string' && admin_avatar || null
+		typeof name === 'string' && name || null
 	]
 	const updated = await conditionalUpdate(
 		'groups',
@@ -416,17 +439,17 @@ export async function updateGroup(req: Request, res: Response, next: NextFunctio
 }
 
 export const patchGroup = [
-	atLeastOneBodyValueValidator(['admin_id', 'admin_avatar']),
-	stringValidator({ field: 'admin_avatar', minLength: 0, maxLength: 255, optional: true }),
+	atLeastOneBodyValueValidator(['admin_id', 'name']),
+	stringValidator({ field: 'name', minLength: 0, maxLength: 255, optional: true }),
 	body('admin_id')
 		.trim()
 		.isInt({ min: 1 })
-		.withMessage('adming_id þarf að vera heiltala stærri en 1'),
+		.withMessage('admin_id þarf að vera heiltala stærri en 1'),
 	xssSanitizer('admin_id'),
-	xssSanitizer('admin_avatar'),
+	xssSanitizer('name'),
 	validationCheck,
 	genericSanitizer('admin_id'),
-	genericSanitizer('admin_avatar'),
+	genericSanitizer('name'),
 	updateGroup
 ]
 

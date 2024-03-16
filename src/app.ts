@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import passport from 'passport';
 import { cors } from './lib/cors.js';
 import { router } from './routes/api.js';
+import { create } from './setup.js';
 
 
 const app = express();
@@ -20,7 +21,6 @@ app.use((_req: Request, res: Response) => {
 });
 
 app.use((err: Error, _req: Request, res: Response) => {
-	console.log('test')
 	if (
 		err instanceof SyntaxError &&
 		'status' in err &&
