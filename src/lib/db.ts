@@ -16,35 +16,29 @@ interface IUser {
 	password: string;
 	avatar?: string;
 	group_id?: number;
-  }
-  
-  declare global {
-	namespace Express {
-	  interface User extends IUser {}
-	}
-  }
+}
 
 const env = environment(process.env, logger);
 
 const sslConfig = {
-    rejectUnauthorized: false, 
+	rejectUnauthorized: false,
 };
 
 if (!env?.connectionString) {
-    logger.error('No connection string');
-    process.exit(1);
+	logger.error('No connection string');
+	process.exit(1);
 }
 
-const {connectionString} = env;
+const { connectionString } = env;
 
 export const pool = new pg.Pool({
-    connectionString,
-    ssl: process.env.NODE_ENV === 'production' ? true : sslConfig,
+	connectionString,
+	ssl: process.env.NODE_ENV === 'production' ? true : sslConfig,
 });
 
 pool.on('error', (err: Error) => {
-    console.error('Unexpected error on idle client', err);
-    process.exit(-1);
+	console.error('Unexpected error on idle client', err);
+	process.exit(-1);
 });
 
 export async function query(q: string, values: Array<number | string | boolean | Date> = []) {
@@ -72,7 +66,8 @@ export async function query(q: string, values: Array<number | string | boolean |
 
 export async function createProject(groupId: number, creatorId: number, assigned_id: number,title: string, status: number, description: string) {
     const queryText = `INSERT INTO projects(group_id, creator_id, assigned_id, date_created, title, status,  description) VALUES ($1, $2, $3, CURRENT_DATE, $4, $5, $6) RETURNING id;`;
-    return query(queryText, [groupId, creatorId, assigned_id, title, status, description]);
+    const result = query(queryText, [groupId, creatorId, assigned_id, title, status, description]);
+	return result || null
 }
 
 export async function delProject(projectId: number) {
@@ -91,7 +86,8 @@ export async function getAllProjectsHandler() {
 
 export async function getProjectsHandler(
 	fields: Array<string | null>,
-	values: Array<number | null>
+	values: Array<number | null>,
+	page: number
 ) {
 	const filteredFields = fields.filter((i) => typeof i === 'string');
 	const filteredValues = values.filter(
@@ -106,16 +102,12 @@ export async function getProjectsHandler(
 	if (filteredFields.length !== filteredValues.length) {
 		throw new Error('fields and values must be of equal length');
 	}
-	const queryText = `SELECT * FROM projects ${p};`;
+
+	const queryText = `SELECT * FROM projects ${p} OFFSET ${page - 1 > 0 ? (page - 1) * 10 : 0}  LIMIT 10;`;
 	const result = await query(queryText, filteredValues);
 	if (result && result.rows) {
 		return result.rows
 	}
-	throw new Error('Ekki tókst að sækja verkefni')
-}
-export async function updateProjectStatus(projectId: number, newStatus: number, description: string) {
-	const queryText = `UPDATE projects SET status = $2, description = COALESCE($3, description) WHERE id = $1 RETURNING *;`;
-	return query(queryText, [projectId, newStatus, description]);
 }
 
 export async function getProjectsByGroupId(groupId: number) {
@@ -130,7 +122,11 @@ export async function getProjectsByUserId(userId: number) {
 
 export async function getProjectById(projectId: number) {
 	const queryText = `SELECT * FROM projects WHERE id = $1;`;
-	return query(queryText, [projectId]);
+	const result = await query(queryText, [projectId])
+	if (result && result?.rows) {
+		return result.rows[0]
+	}
+	return null;
 }
 
 export async function getProjectsByStatus(status: number) {
@@ -140,17 +136,26 @@ export async function getProjectsByStatus(status: number) {
 
 // User functions
 
+export async function getUsersPage(page: number = 0) {
+	const queryText = `SELECT id, isadmin, username, avatar, group_id FROM users OFFSET ${page - 1 > 0 ? (page - 1) * 10 : 0}  LIMIT 10;`
+	const result = await query(queryText);
+	if (result && result?.rows) {
+		return result.rows
+	}
+	return null
+}
+
 export async function loginUser(username: string): Promise<IUser | null> {
 	const queryText = 'SELECT * FROM Users WHERE username = $1';
 	try {
-	  const { rows } = await pool.query<IUser>(queryText, [username]);
-	  if (rows.length === 0) return null; 
-	  return rows[0]; 
+		const { rows } = await pool.query<IUser>(queryText, [username]);
+		if (rows.length === 0) return null;
+		return rows[0];
 	} catch (error) {
-	  console.error('Failed to retrieve user by username:', error);
-	  throw error; 
+		console.error('Failed to retrieve user by username:', error);
+		throw error;
 	}
-  }
+}
 
 export async function createUser(isAdmin: boolean, username: string, password: string, avatarUrl: string) {
     console.log(`Executing query with params:`, {isAdmin, username, password, avatarUrl});
@@ -170,7 +175,11 @@ export async function delUser(userId: number) {
 
 export async function getUserById(userId: number) {
 	const queryText = `SELECT * FROM Users WHERE id = $1;`;
-	return query(queryText, [userId]);
+	const result = await query(queryText, [userId]);
+	if (result && result.rows[0]) {
+		return result.rows[0]
+	}
+	return null;
 }
 
 export async function getUserByUsername(username: string) {
@@ -179,6 +188,12 @@ export async function getUserByUsername(username: string) {
 }
 
 // Group functions
+
+export async function getGroups(page: number, admin_id: false | number) {
+	const queryText = `SELECT * FROM groups ${admin_id ? `WHERE admin_id = $1` : ''} OFFSET ${page - 1 > 0 ? (page - 1) * 10 : 0} LIMIT 10;`
+	const result = admin_id ? await query(queryText, [admin_id]) : await query(queryText)
+	return result?.rows
+}
 
 export async function createGroup(id: number, admin_id: number) {
 	const queryText = `INSERT INTO Groups(id, admin_id, admin_avatar) VALUES ($1, $2, $3) RETURNING id;`;
@@ -203,10 +218,10 @@ export async function joinGroup(userId: number, groupId: number) {
 export async function getGroupById(groupId: number) {
 	const queryText = `SELECT * FROM Groups WHERE id = $1;`;
 	const result = await query(queryText, [groupId]);
-	if (result && result.rows.length === 0) {
-	  return null; 
+	if (result && result.rows[0]) {
+		return result.rows[0]
 	}
-	return result?.rows[0];
+	return null;
 }
 
 export async function dropSchema(dropFile = DROP_SCHEMA_FILE) {
@@ -218,4 +233,44 @@ export async function dropSchema(dropFile = DROP_SCHEMA_FILE) {
 export async function createSchema(schemaFile = SCHEMA_FILE) {
 	const data = await readFile(schemaFile);
 	return query(data.toString('utf-8'));
+}
+
+// Conditional update fyrir patch requests
+
+export async function conditionalUpdate(
+	table: 'users' | 'projects' | 'groups',
+	id: number,
+	fields: Array<string | null>,
+	values: Array<string | number | null>,
+) {
+	const filteredFields = fields.filter((i) => typeof i === 'string');
+	const filteredValues = values.filter(
+		(i): i is string | number => typeof i === 'string' || typeof i === 'number',
+	);
+
+	if (filteredFields.length === 0) {
+		return false;
+	}
+
+	if (filteredFields.length !== filteredValues.length) {
+		throw new Error('fields and values must be of equal length');
+	}
+
+	// id is field = 1
+	const updates = filteredFields.map((field, i) => `${field} = $${i + 2}`);
+
+	const q = `
+	  UPDATE ${table}
+		SET ${updates.join(', ')}
+	  WHERE
+		id = $1
+	  RETURNING *
+	  `;
+
+	const queryValues: Array<string | number> = (
+		[id] as Array<string | number>
+	).concat(filteredValues);
+	const result = await query(q, queryValues);
+
+	return result && result.rows[0] || null;
 }

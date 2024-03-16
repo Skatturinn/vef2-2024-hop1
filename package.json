@@ -6,6 +6,8 @@
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"dev": "nodemon",
+		"setup": "node --loader ts-node/esm ./src/setup.ts",
+		"lint": "eslint . --ext .ts",
 		"start": "node --loader ts-node/esm ./src/app.ts"
 	},
 	"keywords": [
