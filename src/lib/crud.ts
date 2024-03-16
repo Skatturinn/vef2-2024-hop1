@@ -149,11 +149,10 @@ export async function updateProject(
 		typeof group_id === 'string' && Number.parseInt(group_id) || null,
 		typeof assigned_id === 'string' && Number.parseInt(assigned_id) || null,
 		typeof title === 'string' && title || null,
-		typeof status === 'string' && Number.parseInt(status) || null,
+		typeof status === 'string' && status || null,
 		typeof description === 'string' && description || null,
 	]
 
-	console.log(values, 'values')
 	const updated = await conditionalUpdate(
 		'projects',
 		id,

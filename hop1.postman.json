@@ -95,7 +95,7 @@
           "header": [],
           "body": {
             "mode": "raw",
-            "raw": "{\n    \"newStatus\": \"0-5\",\n    \"description\": \"Updated Description\"\n}",
+            "raw": "{\n  \"group_id\": 1,\n \"assigned_id\": 1,\n  \"title\": \"New title\",\n  \"status\": 0 - 5,\n  \"description\": \"Updated Description\"\n}",
             "options": {
               "raw": {
                 "language": "json"

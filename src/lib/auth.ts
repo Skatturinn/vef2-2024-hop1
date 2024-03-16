@@ -1,7 +1,7 @@
 import passport from "passport";
 import { Strategy as JwtStrategy, ExtractJwt, StrategyOptions, VerifyCallback } from "passport-jwt";
 import { Request, Response, NextFunction } from "express";
-import { pool } from "./db.js";
+import { pool, getProjectById } from "./db.js";
 
 interface IUser {
 	id: number;
@@ -52,13 +52,19 @@ export function isAdmin(req: Request, res: Response, next: NextFunction): void {
 	}
 }
 
-export function isInGroup(req: Request, res: Response, next: NextFunction): void {
-	console.log('Checking if in group...');
-	if (req.user && req.user.group_id) {
-		next();
-	} else {
-		res.status(403).json({ message: "Insufficient permissions" });
+export async function isInGroup(req: Request, res: Response, next: NextFunction) {
+	const { projectId } = req.params;
+	const project = await getProjectById(parseInt(projectId, 10));
+
+	if (!project) {
+		return res.status(404).send('Project not found');
 	}
+
+	if (!req.user || req.user.group_id !== project.group_id) {
+		return res.status(403).send('Insufficient permissions: not in the project\'s group');
+	}
+
+	next();
 }
 
 export function authenticate(req: Request, res: Response, next: NextFunction): void {

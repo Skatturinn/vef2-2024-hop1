@@ -138,7 +138,7 @@ router.get('/projects', catchErrors(getProjects));
 router.post('/projects', createProjectHandler);
 router.delete('/projects/:projectId', authenticate, isAdmin, deleteProjectHandler);
 router.get('/projects/:projectId', getProjectByIdHandler);
-router.patch('/projects/:projectId', patchProject);
+router.patch('/projects/:projectId', authenticate, isInGroup, patchProject);
 
 // User routes
 router.get('/users', catchErrors(getUsers));
