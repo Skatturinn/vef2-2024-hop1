@@ -78,4 +78,29 @@ export const projectMustExist = body('projectId').custom(async (projectId) => {
 	}
 });
 
+// body value validator
+export function atLeastOneBodyValueValidator(fields: Array<string>) {
+	return body().custom(async (value, { req }) => {
+		const { body: reqBody } = req;
+
+		let valid = false;
+
+		for (let i = 0; i < fields.length; i += 1) {
+			const field = fields[i];
+
+			if (field in reqBody && reqBody[field] != null) {
+				valid = true;
+				break;
+			}
+		}
+
+		if (!valid) {
+			return Promise.reject(
+				new Error(`require at least one value of: ${fields.join(', ')}`),
+			);
+		}
+		return Promise.resolve();
+	});
+}
+
 

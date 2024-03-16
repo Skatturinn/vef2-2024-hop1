@@ -16,12 +16,6 @@ interface IUser {
 	group_id?: number;
 }
 
-// declare global {
-// 	namespace Express {
-// 		interface User extends IUser { }
-// 	}
-// }
-
 const env = environment(process.env, logger);
 
 const sslConfig = {
@@ -131,7 +125,11 @@ export async function getProjectsByUserId(userId: number) {
 
 export async function getProjectById(projectId: number) {
 	const queryText = `SELECT * FROM projects WHERE id = $1;`;
-	return query(queryText, [projectId]);
+	const result = await query(queryText, [projectId])
+	if (result && result?.rows) {
+		return result.rows[0]
+	}
+	return null;
 }
 
 export async function getProjectsByStatus(status: string) {
@@ -175,7 +173,11 @@ export async function delUser(userId: number) {
 
 export async function getUserById(userId: number) {
 	const queryText = `SELECT * FROM Users WHERE id = $1;`;
-	return query(queryText, [userId]);
+	const result = await query(queryText, [userId]);
+	if (result && result.rows[0]) {
+		return result.rows[0]
+	}
+	return null;
 }
 
 export async function getUserByUsername(username: string) {
@@ -208,7 +210,11 @@ export async function joinGroup(userId: number, groupId: number) {
 
 export async function getGroupById(groupId: number) {
 	const queryText = `SELECT * FROM Groups WHERE id = $1;`;
-	return query(queryText, [groupId]);
+	const result = await query(queryText, [groupId]);
+	if (result && result.rows[0]) {
+		return result.rows[0]
+	}
+	return null;
 }
 
 export async function dropSchema(dropFile = DROP_SCHEMA_FILE) {
@@ -220,4 +226,44 @@ export async function dropSchema(dropFile = DROP_SCHEMA_FILE) {
 export async function createSchema(schemaFile = SCHEMA_FILE) {
 	const data = await readFile(schemaFile);
 	return query(data.toString('utf-8'));
+}
+
+// Conditional update fyrir patch requests
+
+export async function conditionalUpdate(
+	table: 'users' | 'projects' | 'groups',
+	id: number,
+	fields: Array<string | null>,
+	values: Array<string | number | null>,
+) {
+	const filteredFields = fields.filter((i) => typeof i === 'string');
+	const filteredValues = values.filter(
+		(i): i is string | number => typeof i === 'string' || typeof i === 'number',
+	);
+
+	if (filteredFields.length === 0) {
+		return false;
+	}
+
+	if (filteredFields.length !== filteredValues.length) {
+		throw new Error('fields and values must be of equal length');
+	}
+
+	// id is field = 1
+	const updates = filteredFields.map((field, i) => `${field} = $${i + 2}`);
+
+	const q = `
+	  UPDATE ${table}
+		SET ${updates.join(', ')}
+	  WHERE
+		id = $1
+	  RETURNING *
+	  `;
+
+	const queryValues: Array<string | number> = (
+		[id] as Array<string | number>
+	).concat(filteredValues);
+	const result = await query(q, queryValues);
+
+	return result && result.rows[0] || null;
 }

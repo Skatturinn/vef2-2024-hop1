@@ -10,16 +10,17 @@ import {
 	getProjectByIdHandler,
 	createProjectHandler,
 	deleteProjectHandler,
-	updateProjectStatusHandler,
 	createUserHandler,
 	deleteUserHandler,
 	getUserByIdHandler,
 	createGroupHandler,
 	deleteGroupHandler,
 	getGroupByIdHandler,
-	joinGroupHandler,
 	getUsers,
 	getGroupsResponse,
+	patchProject,
+	patchUser,
+	patchGroup,
 } from '../lib/crud.js';
 
 dotenv.config();
@@ -129,18 +130,18 @@ router.get('/projects', catchErrors(getProjects));
 router.post('/projects', createProjectHandler);
 router.delete('/projects/:projectId', deleteProjectHandler);
 router.get('/projects/:projectId', getProjectByIdHandler);
-router.patch('/projects/:projectId', updateProjectStatusHandler);
+router.patch('/projects/:projectId', patchProject);
 
 // User routes
 router.get('/users', catchErrors(getUsers))
 router.post('/users', createUserHandler);
 router.delete('/users/:userId', authenticate, isAdmin, deleteUserHandler);
 router.get('/users/:userId', getUserByIdHandler);
+router.patch('/user/:userId', patchUser)
 
 // Group routes
 router.get('/groups', catchErrors(getGroupsResponse))
 router.post('/groups', createGroupHandler);
 router.delete('/groups/:groupId', authenticate, isAdmin, deleteGroupHandler);
 router.get('/groups/:groupId', getGroupByIdHandler);
-router.post('/groups/join', joinGroupHandler);
-
+router.patch('/groups/:groupId', patchGroup)
