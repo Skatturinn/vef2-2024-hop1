@@ -17,8 +17,10 @@ CREATE TABLE Projects (
     id SERIAL PRIMARY KEY,
     group_id INTEGER NOT NULL,
     creator_id INTEGER NOT NULL,
-    date_created DATE NOT NULL,
-    status VARCHAR(255) NOT NULL,
+	assigned_id INTEGER,
+    date_created timestamp with time zone not null default current_timestamp,
+	title VARCHAR(64) NOT NULL,
+    status INTEGER NOT NULL check (status between 0 and 5),
     description TEXT
 );
 

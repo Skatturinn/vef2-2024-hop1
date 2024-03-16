@@ -1,24 +1,31 @@
-export class Logger {
-	silent: boolean;
+export interface ILogger {
+	info: (...messages: unknown[]) => void;
+	warn: (...messages: unknown[]) => void;
+	error: (...messages: unknown[]) => void;
+}
+
+export class Logger implements ILogger {
+	private silent: boolean;
+
 	constructor(silent = false) {
 		this.silent = silent;
 	}
 
-	info(...messages: string[]) {
+	info(...messages: unknown[]) {
 		if (this.silent) {
 			return;
 		}
 		console.info(...messages);
 	}
 
-	warn(...messages: string[]) {
+	warn(...messages: unknown[]) {
 		if (this.silent) {
 			return;
 		}
 		console.warn(...messages);
 	}
 
-	error(...messages: string[]) {
+	error(...messages: unknown[]) {
 		if (this.silent) {
 			return;
 		}

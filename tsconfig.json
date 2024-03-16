@@ -12,6 +12,6 @@
       "sourceMap": true,
       "baseUrl": "./"
     },
-    "include": ["**/*.ts"],
+    "include": ["**/*.ts", "src/lib/auth.ts"],
     "exclude": ["node_modules", "**/*.spec.ts"]
 }
