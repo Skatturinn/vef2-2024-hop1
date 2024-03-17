@@ -26,9 +26,11 @@ import {
 } from './validation.js';
 import { uploadImage } from '../cloudinary.js';
 import { body } from 'express-validator';
+import { isAdmin } from './auth.js';
 
-// Middleware fyrir projects
-
+/**
+ * Sækir projects úr database út frá query filters ef vill, 10 per ?page
+ */
 export const getProjects = async (req: Request, res: Response) => {
 	const { status, group_id, assigned_id, creator_id, page } = req.query
 	const stikar: {
@@ -66,6 +68,9 @@ export const getProjects = async (req: Request, res: Response) => {
 	}
 }
 
+/**
+ * Nær í project út frá gefnu :projectId í param úr url
+ */
 export const getProjectByIdHandler = async (req: Request, res: Response, next: NextFunction) => {
 	try {
 		const { projectId } = req.params; // Assuming you're using route parameters
@@ -263,11 +268,17 @@ export const createUserHandler = [
 	stringValidator({ field: 'password', minLength: 6 }),
 	stringValidator({ field: 'avatar', minLength: 3, maxLength: 255, optional: true }),
 	heiltalaStaerri('group_id', true),
+	body('isadmin')
+		.trim()
+		.isBoolean()
+		.withMessage('Þarf að vera tilgreint hvort notandi sé admin eða ekki'),
+	xssSanitizer('isadmin'),
 	xssSanitizer('group_id'),
 	xssSanitizer('avatar'),
 	xssSanitizer('username'),
 	xssSanitizer('avatar'),
 	validationCheck,
+	genericSanitizer('isadmin'),
 	genericSanitizer('group_id'),
 	genericSanitizer('avatar'),
 	genericSanitizer('username'),
@@ -284,6 +295,7 @@ export const createUserHandler = [
 			}
 			if (username) {
 				const user = await getUserByUsername(username);
+				console.log(user)
 				if (user) {
 					res.status(400).json({ error: 'Notandanafn frátekið' })
 					return
@@ -299,7 +311,10 @@ export const createUserHandler = [
 					avatarUrl = uploadResult;
 				}
 			}
-			const user = await createUser(isadmin, username, hashedPassword, avatarUrl);
+			const user = await createUser(isadmin, username, hashedPassword, avatarUrl, Number.parseInt(group_id));
+			if (!user) {
+				res.status(500).json({ error: 'ekki tókst að stofna notanda' })
+			}
 			res.status(201).json(user);
 		} catch (error) {
 			next(error);
@@ -518,7 +533,11 @@ export const patchGroup = [
 	body('admin_id')
 		.trim()
 		.isInt({ min: 1 })
-		.withMessage('admin_id þarf að vera heiltala stærri en 1'),
+		.withMessage('admin_id þarf að vera heiltala stærri en 1')
+		.custom(async value => {
+			const user = await getUserById(Number.parseInt(value)) as { isadmin: boolean } | null;
+			return user && user?.isadmin || false
+		}).withMessage('Notandi þarf að vera til og vera admin'),
 	xssSanitizer('admin_id'),
 	xssSanitizer('name'),
 	validationCheck,

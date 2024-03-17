@@ -66,8 +66,8 @@ export async function query(q: string, values: Array<number | string | boolean |
 
 export async function createProject(groupId: number, creatorId: number, assigned_id: number, title: string, status: number, description: string) {
 	const queryText = `INSERT INTO projects(group_id, creator_id, assigned_id, date_created, title, status,  description) VALUES ($1, $2, $3, CURRENT_DATE, $4, $5, $6) RETURNING id;`;
-	const result = query(queryText, [groupId, creatorId, assigned_id, title, status, description]);
-	return result || null
+	const result = await query(queryText, [groupId, creatorId, assigned_id, title, status, description]);
+	return result && result.rows[0] || null
 }
 
 export async function delProject(projectId: number) {
@@ -157,10 +157,12 @@ export async function loginUser(username: string): Promise<IUser | null> {
 	}
 }
 
-export async function createUser(isAdmin: boolean, username: string, password: string, avatarUrl: string) {
-	console.log(`Executing query with params:`, { isAdmin, username, password, avatarUrl });
-	const queryText = `INSERT INTO Users(isAdmin, username, password, avatar) VALUES ($1, $2, $3, $4) RETURNING id;`;
-	return query(queryText, [isAdmin, username, password, avatarUrl]);
+export async function createUser(isadmin: boolean, username: string, password: string, avatarUrl: string, group_id: number) {
+	console.log(`Executing query with params:`, { isadmin, username, password, avatarUrl });
+	const queryText = `INSERT INTO Users(isadmin, username, password, avatar, group_id) VALUES ($1, $2, $3, $4, $5) RETURNING id;`;
+	const result = await query(queryText, [isadmin, username, password, avatarUrl, group_id])
+	console.log(result?.rows)
+	return result && result.rows[0] || null;
 }
 
 export async function delUser(userId: number) {
@@ -176,15 +178,13 @@ export async function delUser(userId: number) {
 export async function getUserById(userId: number) {
 	const queryText = `SELECT * FROM Users WHERE id = $1;`;
 	const result = await query(queryText, [userId]);
-	if (result && result.rows[0]) {
-		return result.rows[0]
-	}
-	return null;
+	return result && result.rows[0] || null;
 }
 
 export async function getUserByUsername(username: string) {
 	const queryText = `SELECT * FROM Users WHERE username = $1;`;
-	return query(queryText, [username]);
+	const result = await query(queryText, [username]);
+	return result && result.rows[0] || null
 }
 
 // Group functions
