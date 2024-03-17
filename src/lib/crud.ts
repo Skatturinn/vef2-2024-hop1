@@ -513,7 +513,7 @@ export async function updateGroup(req: Request, res: Response) {
 }
 
 export const patchGroup = [
-	atLeastOneBodyValueValidator(['admin_id', 'name', 'admin_avatar']),
+	atLeastOneBodyValueValidator(['admin_id', 'name']),
 	stringValidator({ field: 'name', minLength: 0, maxLength: 255, optional: true }),
 	body('admin_id')
 		.trim()
