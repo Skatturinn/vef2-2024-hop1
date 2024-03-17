@@ -1,4 +1,5 @@
-				npm install
+- Uppsetning
+    				npm install
 
 - Keyrir 
 
@@ -19,9 +20,9 @@
 
 # Kanban Borð
 
-Arnar Eyðunsson Simonsen: AddiSim, aes53@hi.is 
+Arnar Eyðunsson Simonsen: @AddiSim, aes53@hi.is 
 
-Elías Lúðvíksson: Skatturinn, ell9@hi.is
+Elías Lúðvíksson: @Skatturinn, ell9@hi.is
 
 # Admin login og Authorization
 
