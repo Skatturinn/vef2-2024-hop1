@@ -3,7 +3,7 @@ import passport from 'passport';
 import { cors } from './lib/cors.js';
 import { router } from './routes/api.js';
 
-const app = express();
+export const app = express();
 
 
 app.use(express.json());
