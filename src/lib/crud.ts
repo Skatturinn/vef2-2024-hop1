@@ -76,7 +76,7 @@ export const getProjectByIdHandler = async (req: Request, res: Response, next: N
 		const { projectId } = req.params;
 		const id = paramtala(projectId);
 		if (!id) {
-			res.status(400).json({ error: '/projects/:projectId þarf að vera heiltata >9' })
+			res.status(400).json({ error: '/projects/:projectId þarf að vera heiltata >0' })
 			return
 		}
 		const project = await getProjectById(id);
