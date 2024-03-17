@@ -15,7 +15,7 @@ test
 lint
 
 
--npm run lint
+- npm run lint
 
 # Kanban Borð
 
