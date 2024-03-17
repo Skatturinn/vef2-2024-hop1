@@ -26,7 +26,6 @@ import {
 } from './validation.js';
 import { uploadImage } from '../cloudinary.js';
 import { body } from 'express-validator';
-import { isAdmin } from './auth.js';
 
 /**
  * Sækir projects úr database út frá query filters ef vill, 10 per ?page
