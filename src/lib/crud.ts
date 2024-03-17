@@ -73,8 +73,13 @@ export const getProjects = async (req: Request, res: Response) => {
  */
 export const getProjectByIdHandler = async (req: Request, res: Response, next: NextFunction) => {
 	try {
-		const { projectId } = req.params; // Assuming you're using route parameters
-		const project = await getProjectById(parseInt(projectId));
+		const { projectId } = req.params;
+		const id = paramtala(projectId);
+		if (!id) {
+			res.status(400).json({ error: '/projects/:projectId þarf að vera heiltata >9' })
+			return
+		}
+		const project = await getProjectById(id);
 		if (!project) {
 			return res.status(404).json({ message: 'Project not found' });
 		}
@@ -346,7 +351,7 @@ export const deleteUserHandler = async (req: Request, res: Response, next: NextF
 export const getUserByIdHandler = async (req: Request, res: Response, next: NextFunction) => {
 	try {
 		const { userId } = req.params;
-		const user = await getUserById(Number.parseInt(userId));
+		const user = Number(userId) > 0 && await getUserById(Number.parseInt(userId));
 		if (!user) {
 			return res.status(404).json({ message: 'User not found' });
 		}
