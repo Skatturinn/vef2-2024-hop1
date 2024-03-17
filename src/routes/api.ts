@@ -3,7 +3,7 @@ import express, { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { loginUser } from '../lib/db.js';
-import { authenticate, isAdmin, isUserOwnerOrAdmin } from '../lib/auth.js';
+import { authenticate, isAdmin } from '../lib/auth.js';
 import { catchErrors } from '../lib/catch-errors.js';
 import {
 	getProjects,
