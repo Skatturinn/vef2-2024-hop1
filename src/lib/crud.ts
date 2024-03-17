@@ -26,7 +26,6 @@ import {
 } from './validation.js';
 import { uploadImage } from '../cloudinary.js';
 import { body } from 'express-validator';
-import { hash } from 'bcrypt';
 
 // Middleware fyrir projects
 
