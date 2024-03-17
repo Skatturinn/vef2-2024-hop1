@@ -140,7 +140,7 @@
           "header": [],
           "body": {
             "mode": "raw",
-            "raw": "{\n    \"isAdmin\": false,\n    \"username\": \"user1\",\n    \"password\": \"password\",\n    \"avatar\": \"avatar.png\"\n    \"group_id\": \"1\"\n}",
+            "raw": "{\n    \"isAdmin\": false,\n    \"username\": \"user1\",\n    \"password\": \"password\",\n    \"avatar\": \"avatar.png\",\n    \"group_id\": \"1\"\n}",
             "options": {
               "raw": {
                 "language": "json"
@@ -178,13 +178,13 @@
         "response": []
       },
       {
-        "name": "PATCH /users/:userId",
+        "name": "PATCH /user/:userId",
         "request": {
           "method": "PATCH",
           "header": [],
           "body": {
             "mode": "raw",
-            "raw": "{\n    \"isAdmin\": false,\n    \"username\": \"user1\",\n    \"password\": \"password\",\n    \"avatar\": \"avatar.png\"\n    \"group_id\": \"1\"\n}",
+            "raw": "{\n    \"isAdmin\": false,\n    \"username\": \"user1\",\n    \"password\": \"password\",\n    \"avatar\": \"avatar.png\",\n    \"group_id\": \"1\"\n}",
             "options": {
               "raw": {
                 "language": "json"
@@ -192,12 +192,12 @@
             }
           },
           "url": {
-            "raw": "{{baseUrl}}/users/:userId",
+            "raw": "{{baseUrl}}/user/:userId",
             "host": [
               "{{baseUrl}}"
             ],
             "path": [
-              "users",
+              "user",
               ":userId"
             ]
           }
