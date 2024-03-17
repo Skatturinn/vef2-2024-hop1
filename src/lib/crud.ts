@@ -22,7 +22,8 @@ import {
 	xssSanitizer,
 	genericSanitizer,
 	atLeastOneBodyValueValidator,
-	heiltalaStaerri
+	heiltalaStaerri,
+	paramtala
 } from './validation.js';
 import { uploadImage } from '../cloudinary.js';
 import { body } from 'express-validator';
@@ -85,9 +86,9 @@ export const getProjectByIdHandler = async (req: Request, res: Response, next: N
 
 export const deleteProjectHandler = async (req: Request, res: Response, next: NextFunction) => {
 	const { projectId } = req.params;
-	const id = Number.parseInt(projectId)
+	const id = paramtala(projectId);
 	if (!id) {
-		res.status(400).json({ error: 'project Id þarf að vera heiltala' });
+		res.status(400).json({ error: '/projects/:projectId þarf að vera heiltala' });
 		return;
 	}
 	try {
@@ -328,10 +329,15 @@ export const createUserHandler = [
 
 
 export const deleteUserHandler = async (req: Request, res: Response, next: NextFunction) => {
+	const { userId } = req.params;
+	const id = paramtala(userId)
+	if (!id) {
+		res.status(400).json({ error: '/users/:userId þarf að vera heiltala > 0' });
+		return;
+	}
 	try {
-		const { userId } = req.params;
-		await delUser(parseInt(userId));
-		res.status(204).end();
+		await delUser(id);
+		res.status(204).json({});
 	} catch (error) {
 		next(error);
 	}
@@ -354,7 +360,7 @@ export async function updateUser(req: Request, res: Response, next: NextFunction
 	const { userId } = req.params;
 	const user = Number(userId) > 0 && await getUserById(Number.parseInt(userId));
 	if (!user) {
-		res.status(400).json({ error: `notandi fannst ekki á skrá með id=${userId}` });
+		res.status(400).json({ error: `notandi fannst ekki á skrá með id=${userId}, id á að vera heiltala stærri en 0` });
 		return
 	}
 	const { isadmin, username, password, avatar, group_id } = req.body;
@@ -489,10 +495,15 @@ export const createGroupHandler = [
 ];
 
 export const deleteGroupHandler = async (req: Request, res: Response, next: NextFunction) => {
+	const { groupId } = req.params;
+	const id = paramtala(groupId);
+	if (!id) {
+		res.status(400).json({ error: '/groups/:groupId þarf að vera heilta > 0' })
+		return
+	}
 	try {
-		const { group_id } = req.params;
-		await delGroup(parseInt(group_id));
-		res.status(204).end();
+		await delGroup(Number.parseInt(groupId));
+		res.status(204).json({});
 	} catch (error) {
 		next(error);
 	}
@@ -501,13 +512,14 @@ export const deleteGroupHandler = async (req: Request, res: Response, next: Next
 export const getGroupByIdHandler = async (req: Request, res: Response, next: NextFunction) => {
 	try {
 		const { groupId } = req.params;
-		const group = await getGroupById(parseInt(groupId));
-		if (group && group.rowCount === 0) {
-			return res.status(404).json({ message: 'Group not found' });
+		const group = Number(groupId) > 0 && await getGroupById(parseInt(groupId));
+		if (!group) {
+			res.status(404).json({ message: 'Group not found' });
+			return
 		}
-		if (group) {
-			res.status(200).json(group);
-		}
+
+		res.status(200).json(group);
+
 	} catch (error) {
 		next(error);
 	}
@@ -515,7 +527,11 @@ export const getGroupByIdHandler = async (req: Request, res: Response, next: Nex
 
 export async function updateGroup(req: Request, res: Response) {
 	const { groupId } = req.params;
-	const id = Number.parseInt(groupId);
+	const id = paramtala(groupId);
+	if (!id) {
+		res.status(400).json('groups/:groupId þarf að vera heiltala > 0');
+		return
+	}
 	const group = await getGroupById(id);
 	if (!group) {
 		res.status(400).json('fann ekki hóp með viðeigandi id');

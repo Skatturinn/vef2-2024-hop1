@@ -105,4 +105,6 @@ export const heiltalaStaerri = (field: string, optional: boolean = false) => {
 		.optional(optional)
 }
 
-
+export const paramtala = (number: string) => {
+	return Number(number) > 0 && Number.parseInt(number)
+}

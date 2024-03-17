@@ -109,25 +109,10 @@ export async function getProjectsHandler(
 	}
 }
 
-export async function getProjectsByGroupId(groupId: number) {
-	const queryText = `SELECT * FROM projects WHERE group_id = $1;`;
-	return query(queryText, [groupId]);
-}
-
-export async function getProjectsByUserId(userId: number) {
-	const queryText = `SELECT * FROM projects WHERE creator_id = $1;`;
-	return query(queryText, [userId]);
-}
-
 export async function getProjectById(projectId: number) {
 	const queryText = `SELECT * FROM projects WHERE id = $1;`;
 	const result = await query(queryText, [projectId])
 	return result && result?.rows[0] || null;
-}
-
-export async function getProjectsByStatus(status: number) {
-	const queryText = `SELECT * FROM projects WHERE status = $1;`;
-	return query(queryText, [status]);
 }
 
 // User functions
@@ -196,6 +181,9 @@ export async function createGroup(admin_id: number, name: string) {
 }
 
 export async function delGroup(groupId: number) {
+	if (!(Number(groupId) > 0)) {
+		return null
+	}
 	const queryText = `DELETE FROM Groups WHERE id = $1;`;
 	return query(queryText, [groupId]);
 }
