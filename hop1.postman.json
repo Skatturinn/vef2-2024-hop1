@@ -51,7 +51,7 @@
           "header": [],
           "body": {
             "mode": "raw",
-            "raw": "{\n    \"group_id\": 1,\n    \"creator_id\": 1, \n    \"assigned_id\": 1,\n  \"title\": \"title\"\n \"status\": \"0-5\",\n   \"description\": \"Project Description\"\n}",
+            "raw": "{\n    \"group_id\": 1,\n    \"creator_id\": 1, \n    \"assigned_id\": 1,\n    \"title\": \"title\",\n    \"status\": \"0-5\",\n    \"description\": \"Project Description\"\n}",
             "options": {
               "raw": {
                 "language": "json"
@@ -341,7 +341,7 @@
     "variable": [
       {
         "key": "baseUrl",
-        "value": "http://localhost:3000"
+        "value": "https://vef2-2024-hop1.onrender.com"
       }
     ]
   }
