@@ -34,19 +34,11 @@ export const stringValidator = ({
 };
 
 export const genericSanitizer = (param: string) => { return body(param).trim().escape() };
-// User  validator
-export const usernameMustBeUnique = body('username').custom(async (username) => {
-	const result = await getUserByUsername(username);
-	if (result !== null && result.rowCount !== null && result.rowCount > 0) {
-		return Promise.reject(new Error('Username already exists'));
-	}
-});
-
 
 // Project validator 
 export const validateProjectStatus = body('status')
-    .isInt({ min: 0, max: 5 })
-    .withMessage('Status must be an integer between 0 and 5.');
+	.isInt({ min: 0, max: 5 })
+	.withMessage('Status must be an integer between 0 and 5.');
 
 // XSS sanitizer 
 export const xssSanitizer = (param: string) =>
@@ -103,6 +95,14 @@ export function atLeastOneBodyValueValidator(fields: Array<string>) {
 		}
 		return Promise.resolve();
 	});
+}
+
+export const heiltalaStaerri = (field: string, optional: boolean = false) => {
+	return body(field)
+		.trim()
+		.isInt({ min: 1 })
+		.withMessage(`${field} þarf að vera heiltala stærri en 0`)
+		.optional(optional)
 }
 
 
