@@ -77,18 +77,13 @@ export async function isUserOwnerOrAdmin(req: Request, res: Response, next: Next
     
 
     if (!req.user) {
-        return res.status(401).send('Authentication required');
+        res.status(401).send('Authentication required');
+    } else if (req.user.isadmin || req.user.id === Number.parseInt(userId)) {
+	next() 
+    } else {
+        res.status(403).send('Insufficient permissions: only the account owner or an admin can perform this action');
     }
 
-	if (req.user.isadmin) {
-        return next();
-    }
-
-    if (req.user.id === Number(userId)) {
-        return next();
-    }
-
-    res.status(403).send('Insufficient permissions: only the account owner or an admin can perform this action');
 }
 
 export function authenticate(req: Request, res: Response, next: NextFunction): void {
