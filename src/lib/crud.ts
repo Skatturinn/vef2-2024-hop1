@@ -269,7 +269,7 @@ export const createUserHandler = [
 			}
 			if (username) {
 				const user = await getUserByUsername(username);
-				if (user == username) {
+				if (user) {
 					res.status(400).json({ error: 'Notandanafn frátekið' })
 					return
 				}
