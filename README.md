@@ -1,21 +1,21 @@
-- npm install
+				npm install
 
-Keyrir 
-
-
-- npm run dev
-
-  
-test
+- Keyrir 
 
 
-- npm run test
+				npm run dev
 
   
-lint
+- test
 
 
-- npm run lint
+				npm run test
+
+  
+- lint
+
+
+				npm run lint
 
 # Kanban Borð
 
@@ -25,8 +25,8 @@ Elías Lúðvíksson: Skatturinn, ell9@hi.is
 
 # Admin login og Authorization
 
-username: "admin"
-password: "admin123"
+				"username": "admin"
+				"password": "admin123"
 
 Færð Authorization key, fyrir admin only aðferðir þá þarf að fara í Headers á postman og velja Authorization undir key og value er Bearer _TOKEN_
 
@@ -37,9 +37,9 @@ Færð Authorization key, fyrir admin only aðferðir þá þarf að fara í Hea
 - **POST /login**: Authenticate á user
 
   
-body:				{
-							username: string,
-							password: string
+					body: 	{
+						username: string,
+						password: string
 						}
 
 ## Users
@@ -57,9 +57,9 @@ body:				{
 - **PATCH /users/:userID**: Patch á user (Admin or user owner only)
 
 
-  body: {
-  group_id: number
-  }
+					  body: {
+					  group_id: number
+					  }
 - **DELETE /users/:userId**: Delete user (Admin only).
 
 ## Groups
@@ -68,15 +68,15 @@ body:				{
 - **POST /groups**: Búa til nýjan hóp.
 
 
-  body: {
+					  body: {
 						admin_id: number,
 						name: string
-					}
+						}
 - **GET /groups/:groupId**: Get á hóp.
 - **PATCH /groups/:groupId**: Breyta hóp.
 
 
-  body: { name: string }
+					  body: { name: string }
 - **DELETE /groups/:groupId**: Delete hóp (Admin only).
 
 ## Projects
@@ -85,15 +85,15 @@ body:				{
 - **POST /projects**: Búa til nýtt verkefni.
 
 
-body: {
-						status: 0,
-						title: string
-					}
+						body: {
+							status: 0,
+							title: string
+							}
 - **GET /projects/:projectId**: Get á verkefni.
 - **PATCH /projects/:projectId**: Breyta verkefni (Admin or group member only).
 
 
-  body: {
-						status: 1
-					}
+						  body: {
+							status: 1
+							}
 - **DELETE /projects/:projectId**: Eyðir verkefni (Admin only).
