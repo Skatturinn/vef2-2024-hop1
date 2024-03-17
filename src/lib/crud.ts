@@ -492,10 +492,20 @@ export async function updateGroup(req: Request, res: Response) {
 }
 
 export const patchGroup = [
-	atLeastOneBodyValueValidator(['name']),
+	atLeastOneBodyValueValidator(['admin_id', 'name']),
 	stringValidator({ field: 'name', minLength: 0, maxLength: 255, optional: true }),
+	body('admin_id')
+		.trim()
+		.isInt({ min: 1 })
+		.withMessage('admin_id þarf að vera heiltala stærri en 1')
+		.custom(async value => {
+			const user = await getUserById(Number.parseInt(value)) as { isadmin: boolean } | null;
+			return user && user?.isadmin || false
+		}).withMessage('Notandi þarf að vera til og vera admin'),
+	xssSanitizer('admin_id'),
 	xssSanitizer('name'),
 	validationCheck,
+	genericSanitizer('admin_id'),
 	genericSanitizer('name'),
 	updateGroup
 ]
