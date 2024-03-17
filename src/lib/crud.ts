@@ -115,9 +115,12 @@ export async function updateProject(
 ) {
 	const { projectId } = req.params;
 	const id = Number.parseInt(projectId)
+	if (!id) {
+		res.status(400).json({ error: '/projects/:projectId þarf að vera heiltala > 0' })
+	}
 	const project = await getProjectById(id);
 	if (!project) {
-		res.status(400).json('fann ekki verkefni með umbeðið id');
+		res.status(400).json({ error: 'fann ekki verkefni með umbeðið id' });
 		return
 	}
 	if (!(req.user && (req.user.isadmin || req.user.group_id === project.group_id))) {
@@ -353,7 +356,8 @@ export const getUserByIdHandler = async (req: Request, res: Response, next: Next
 		const { userId } = req.params;
 		const user = Number(userId) > 0 && await getUserById(Number.parseInt(userId));
 		if (!user) {
-			return res.status(404).json({ message: 'User not found' });
+			res.status(400).json({ error: `notandi fannst ekki á skrá með id=${userId}, id á að vera heiltala stærri en 0` });
+			return
 		}
 		res.status(200).json(user);
 	} catch (error) {
@@ -517,7 +521,12 @@ export const deleteGroupHandler = async (req: Request, res: Response, next: Next
 export const getGroupByIdHandler = async (req: Request, res: Response, next: NextFunction) => {
 	try {
 		const { groupId } = req.params;
-		const group = Number(groupId) > 0 && await getGroupById(parseInt(groupId));
+		const id = paramtala(groupId);
+		if (!id) {
+			res.status(400).json({ error: '/groups/:groupId þarf að vera heiltala > 0' })
+			return
+		}
+		const group = await getGroupById(id);
 		if (!group) {
 			res.status(404).json({ message: 'Group not found' });
 			return
