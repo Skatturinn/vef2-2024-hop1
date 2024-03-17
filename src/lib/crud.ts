@@ -260,7 +260,7 @@ export const createUserHandler = [
 	genericSanitizer('password'),
 	async (req: Request, res: Response, next: NextFunction) => {
 		try {
-			const { isAdmin, username, password, avatar, group_id } = req.body;
+			const { isadmin, username, password, avatar, group_id } = req.body;
 			if (group_id) {
 				const group = await getGroupById(Number.parseInt(group_id));
 				if (!group) {
@@ -281,7 +281,7 @@ export const createUserHandler = [
 				const uploadResult = await uploadImage(avatar);
 				avatarUrl = typeof uploadResult === 'string' ? uploadResult : '';
 			}
-			const user = await createUser(isAdmin, username, hashedPassword, avatarUrl, group_id);
+			const user = await createUser(isadmin, username, hashedPassword, avatarUrl, group_id);
 			res.status(201).json(user);
 		} catch (error) {
 			next(error);
@@ -320,7 +320,7 @@ export async function updateUser(req: Request, res: Response, next: NextFunction
 		res.status(400).json({ error: 'notandi fannst ekki á skrá með id=userId' });
 		return
 	}
-	const { isAdmin, username, password, avatar, group_id } = req.body;
+	const { isadmin, username, password, avatar, group_id } = req.body;
 	const hashedPassword = await hashPassword(password);
 	let avatarUrl = '';
 			if (avatar) {
@@ -328,7 +328,7 @@ export async function updateUser(req: Request, res: Response, next: NextFunction
 				avatarUrl = typeof uploadResult === 'string' ? uploadResult : '';
 			}
 	const fields = [
-		typeof isAdmin === 'string' && isAdmin ? 'isAdmin' : null,
+		typeof isadmin === 'string' && isadmin ? 'isadmin' : null,
 		typeof username === 'string' && username ? 'username' : null,
 		typeof hashedPassword === 'string' && hashedPassword ? 'password' : null,
 		typeof avatarUrl === 'string' && avatarUrl ? 'avatar' : null,
@@ -340,7 +340,7 @@ export async function updateUser(req: Request, res: Response, next: NextFunction
 		return
 	}
 	const values = [
-		typeof isAdmin === 'string' && isAdmin || null,
+		typeof isadmin === 'string' && isadmin || null,
 		typeof username === 'string' && username || null,
 		typeof hashedPassword === 'string' && hashedPassword || null,
 		typeof avatarUrl === 'string' && avatarUrl || null,
@@ -362,7 +362,7 @@ export async function updateUser(req: Request, res: Response, next: NextFunction
 
 }
 export const patchUser = [
-	atLeastOneBodyValueValidator(['isAdmin', 'username', 'password', 'avatar', 'group_id']),
+	atLeastOneBodyValueValidator(['isadmin', 'username', 'password', 'avatar', 'group_id']),
 	stringValidator({ field: 'username', minLength: 3, maxLength: 255, optional: true }),
 	stringValidator({ field: 'password', minLength: 3, maxLength: 255, optional: true }),
 	stringValidator({ field: 'avatar', minLength: 3, maxLength: 255, optional: true }),
@@ -371,16 +371,16 @@ export const patchUser = [
 		.isInt({ min: 1 })
 		.withMessage('group_id þarf að vera heiltala stærri en 1')
 		.optional(true),
-	body('isAdmin')
+	body('isadmin')
 		.trim()
 		.isBoolean()
 		.optional(true),
-	xssSanitizer('isAdmin'),
+	xssSanitizer('isadmin'),
 	xssSanitizer('username'),
 	xssSanitizer('password'),
 	xssSanitizer('group_id'),
 	validationCheck,
-	genericSanitizer('isAdmin'),
+	genericSanitizer('isadmin'),
 	genericSanitizer('username'),
 	genericSanitizer('password'),
 	genericSanitizer('group_id'),
