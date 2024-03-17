@@ -19,6 +19,7 @@ Færð Authorization key, fyrir admin only aðferðir þá þarf að fara í Hea
 
 ## Users
 
+- **GET /users**: Skilar öllum users með stuðning við filters með queries.
 - **POST /users**: Búa til nýjan user.
 - **GET /users/:userId**: Get á user.
 - **PATCH /users/:userID**: Patch á user (Admin or user owner only)
@@ -26,13 +27,15 @@ Færð Authorization key, fyrir admin only aðferðir þá þarf að fara í Hea
 
 ## Groups
 
+- **GET /groups**: Skilar öllum hópum með stuðning við filters með queries.
 - **POST /groups**: Búa til nýjan hóp.
 - **GET /groups/:groupId**: Get á hóp.
 - **DELETE /groups/:groupId**: Delete hóp (Admin only).
 
 ## Projects
 
-- **POST /projects**: Búa til nýtt project.
-- **GET /projects/:projectId**: Get á project.
-- **PATCH /projects/:projectId**: Patch á project (Admin or group member only).
-- **DELETE /projects/:projectId**: Delete project (Admin only).
+- **GET /projects**: Skilar öllum verkefnum með stuðning við filters með queries.
+- **POST /projects**: Búa til nýtt verkefni.
+- **GET /projects/:projectId**: Get á verkefni.
+- **PATCH /projects/:projectId**: Breyta verkefni (Admin or group member only).
+- **DELETE /projects/:projectId**: Eyðir verkefni (Admin only).
