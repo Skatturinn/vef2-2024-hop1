@@ -51,18 +51,39 @@ export function isAdmin(req: Request, res: Response, next: NextFunction): void {
 }
 
 export async function isInGroup(req: Request, res: Response, next: NextFunction) {
-	const { projectId } = req.params;
-	const project = await getProjectById(parseInt(projectId, 10));
+    const { projectId } = req.params;
+    if (!projectId) {
+        return res.status(400).send('Project ID is required');
+    }
 
-	if (!project) {
-		return res.status(404).send('Project not found');
-	}
+    const project = await getProjectById(parseInt(projectId, 10));
+    if (!project) {
+        return res.status(404).send('Project not found');
+    }
 
-	if (!req.user || req.user.group_id !== project.group_id) {
-		return res.status(403).send('Insufficient permissions: not in the project\'s group');
-	}
+    if (req.user && req.user.isadmin) {
+        return next();
+    }
 
-	next();
+    if (req.user && req.user.group_id === project.group_id) {
+        next();
+    } else {
+        res.status(403).send('Insufficient permissions: not in the project\'s group');
+    }
+}
+
+export async function isUserOwnerOrAdmin(req: Request, res: Response, next: NextFunction) {
+    const { userId } = req.params;
+    
+
+    if (!req.user) {
+        res.status(401).send('Authentication required');
+    } else if (req.user.isadmin || req.user.id === Number.parseInt(userId)) {
+	next() 
+    } else {
+        res.status(403).send('Insufficient permissions: only the account owner or an admin can perform this action');
+    }
+
 }
 
 export function authenticate(req: Request, res: Response, next: NextFunction): void {

@@ -157,7 +157,7 @@ export async function loginUser(username: string): Promise<IUser | null> {
 	}
 }
 
-export async function createUser(isadmin: boolean, username: string, password: string, avatarUrl: string, group_id: number) {
+export async function createUser(isadmin: boolean | '', username: string, password: string, avatarUrl: string, group_id: number) {
 	console.log(`Executing query with params:`, { isadmin, username, password, avatarUrl });
 	const queryText = `INSERT INTO Users(isadmin, username, password, avatar, group_id) VALUES ($1, $2, $3, $4, $5) RETURNING id;`;
 	const result = await query(queryText, [isadmin, username, password, avatarUrl, group_id])
@@ -195,9 +195,9 @@ export async function getGroups(page: number, admin_id: false | number) {
 	return result?.rows
 }
 
-export async function createGroup(id: number, admin_id: number) {
-	const queryText = `INSERT INTO Groups(id, admin_id, admin_avatar) VALUES ($1, $2, $3) RETURNING id;`;
-	return query(queryText, [id, admin_id, 'default.jpg']);
+export async function createGroup(admin_id: number, name: string) {
+	const queryText = `INSERT INTO Groups(admin_id, name) VALUES ($1, $2) RETURNING id;`;
+	return query(queryText, [admin_id, name]);
 }
 
 export async function delGroup(groupId: number) {

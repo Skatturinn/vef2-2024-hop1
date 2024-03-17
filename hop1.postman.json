@@ -51,7 +51,7 @@
           "header": [],
           "body": {
             "mode": "raw",
-            "raw": "{\n    \"groupId\": 1,\n    \"creatorId\": 1, \n    \"assigned_id\": 1,\n    \"status\": \"0-5\",\n    \"description\": \"Project Description\"\n}",
+            "raw": "{\n    \"group_id\": 1,\n    \"creator_id\": 1, \n    \"assigned_id\": 1,\n  \"title\": \"title\"\n \"status\": \"0-5\",\n   \"description\": \"Project Description\"\n}",
             "options": {
               "raw": {
                 "language": "json"
@@ -95,7 +95,7 @@
           "header": [],
           "body": {
             "mode": "raw",
-            "raw": "{\n  \"group_id\": 1,\n \"assigned_id\": 1,\n  \"title\": \"New title\",\n  \"status\": 0 - 5,\n  \"description\": \"Updated Description\"\n}",
+            "raw": "{\n  \"group_id\": 1,\n  \"assigned_id\": 1,\n  \"title\": \"New title\",\n  \"status\": 0 - 5,\n  \"description\": \"Updated Description\"\n}",
             "options": {
               "raw": {
                 "language": "json"
@@ -140,7 +140,7 @@
           "header": [],
           "body": {
             "mode": "raw",
-            "raw": "{\n    \"username\": \"user1\",\n    \"password\": \"password\",\n    \"isAdmin\": false,\n    \"avatar\": \"avatar.png\"\n}",
+            "raw": "{\n    \"isadmin\": false,\n    \"username\": \"user1\",\n    \"password\": \"password\",\n    \"avatar\": \"avatar.png\",\n    \"group_id\": \"1\"\n}",
             "options": {
               "raw": {
                 "language": "json"
@@ -184,7 +184,7 @@
           "header": [],
           "body": {
             "mode": "raw",
-            "raw": "{}",
+            "raw": "{\n    \"isadmin\": false,\n    \"username\": \"user1\",\n    \"password\": \"password\",\n    \"avatar\": \"avatar.png\",\n    \"group_id\": \"1\"\n}",
             "options": {
               "raw": {
                 "language": "json"
@@ -273,7 +273,7 @@
           "header": [],
           "body": {
             "mode": "raw",
-            "raw": "{\n    \"newName\": \"Updated name\"\n}",
+            "raw": "{\n    \"name\": \"Updated name\"\n}",
             "options": {
               "raw": {
                 "language": "json"
@@ -306,33 +306,6 @@
             "path": [
               "groups",
               ":groupId"
-            ]
-          }
-        },
-        "response": []
-      },
-      {
-        "name": "POST /groups/join",
-        "request": {
-          "method": "POST",
-          "header": [],
-          "body": {
-            "mode": "raw",
-            "raw": "{\n    \"userId\": 1,\n    \"groupId\": 1\n}",
-            "options": {
-              "raw": {
-                "language": "json"
-              }
-            }
-          },
-          "url": {
-            "raw": "{{baseUrl}}/groups/join",
-            "host": [
-              "{{baseUrl}}"
-            ],
-            "path": [
-              "groups",
-              "join"
             ]
           }
         },
