@@ -112,7 +112,6 @@ router.get('/', catchErrors(index));
 
 // Authentication routes
 router.post('/login', async (req, res) => {
-	console.log('/login route hit');
 	const { username, password } = req.body;
 	const user = await loginUser(username);
 	if (!user) {
