@@ -1,6 +1,8 @@
 # Kanban Borð
 
-AddiSim(aes53@hi.is) og Skatturinn(ell9@hi.is)
+Arnar Eyðunsson Simonsen: AddiSim, aes53@hi.is 
+
+Elías Lúðvíksson: Skatturinn, ell9@hi.is
 
 # Admin login og Authorization
 
