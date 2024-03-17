@@ -274,7 +274,7 @@ export const createUserHandler = [
 	genericSanitizer('avatar'),
 	async (req: Request, res: Response, next: NextFunction) => {
 		try {
-			const { isAdmin, username, password, avatar, group_id } = req.body;
+			const { isadmin, username, password, avatar, group_id } = req.body;
 			if (group_id) {
 				const group = await getGroupById(Number.parseInt(group_id));
 				if (!group) {
@@ -299,7 +299,7 @@ export const createUserHandler = [
 					avatarUrl = uploadResult;
 				}
 			}
-			const user = await createUser(isAdmin, username, hashedPassword, avatarUrl);
+			const user = await createUser(isadmin, username, hashedPassword, avatarUrl);
 			res.status(201).json(user);
 		} catch (error) {
 			next(error);
@@ -338,13 +338,13 @@ export async function updateUser(req: Request, res: Response, next: NextFunction
 		res.status(400).json({ error: 'notandi fannst ekki á skrá með id=userId' });
 		return
 	}
-	const { isAdmin, username, password, avatar, group_id } = req.body;
+	const { isadmin, username, password, avatar, group_id } = req.body;
 	if (!req.user || req.user?.id !== Number.parseInt(userId)) {
 		res.status(403).send('Insufficient permissions: not in the project\'s group');
 		return
 	}
 	const fields = [
-		typeof isAdmin === 'string' && isAdmin ? 'isAdmin' : null,
+		typeof isadmin === 'string' && isadmin ? 'isadmin' : null,
 		typeof username === 'string' && username ? 'username' : null,
 		typeof password === 'string' && password ? 'password' : null,
 		typeof avatar === 'string' && avatar ? 'avatar' : null,
@@ -356,7 +356,7 @@ export async function updateUser(req: Request, res: Response, next: NextFunction
 		return
 	}
 	const values = [
-		typeof isAdmin === 'string' && JSON.parse(isAdmin) || null,
+		typeof isadmin === 'string' && JSON.parse(isadmin) || null,
 		typeof username === 'string' && username || null,
 		typeof password === 'string' && password || null,
 		typeof avatar === 'string' && avatar || null,
@@ -378,7 +378,7 @@ export async function updateUser(req: Request, res: Response, next: NextFunction
 
 }
 export const patchUser = [
-	atLeastOneBodyValueValidator(['isAdmin', 'username', 'password', 'avatar', 'group_id']),
+	atLeastOneBodyValueValidator(['isadmin', 'username', 'password', 'avatar', 'group_id']),
 	stringValidator({ field: 'username', minLength: 3, maxLength: 255, optional: true }),
 	stringValidator({ field: 'password', minLength: 3, maxLength: 255, optional: true }),
 	stringValidator({ field: 'avatar', minLength: 3, maxLength: 255, optional: true }),
@@ -387,17 +387,17 @@ export const patchUser = [
 		.isInt({ min: 1 })
 		.withMessage('group_id þarf að vera heiltala stærri en 1')
 		.optional(true),
-	body('isAdmin')
+	body('isadmin')
 		.trim()
 		.isBoolean()
 		.optional(true),
-	xssSanitizer('isAdmin'),
+	xssSanitizer('isadmin'),
 	xssSanitizer('username'),
 	xssSanitizer('password'),
 	xssSanitizer('avatar'),
 	xssSanitizer('group_id'),
 	validationCheck,
-	genericSanitizer('isAdmin'),
+	genericSanitizer('isadmin'),
 	genericSanitizer('username'),
 	genericSanitizer('password'),
 	genericSanitizer('avatar'),
@@ -442,7 +442,7 @@ export const createGroupHandler = [
 				res.status(400).json({ error: 'admin_id er ekki valid' })
 				return
 			}
-			if (!user.isAdmin) {
+			if (!user.isadmin) {
 				res.status(400).json({ error: 'admin_id Notandi er ekki admin' })
 			}
 			console.log(user)
