@@ -178,7 +178,7 @@
         "response": []
       },
       {
-        "name": "PATCH /user/:userId",
+        "name": "PATCH /users/:userId",
         "request": {
           "method": "PATCH",
           "header": [],
@@ -192,12 +192,12 @@
             }
           },
           "url": {
-            "raw": "{{baseUrl}}/user/:userId",
+            "raw": "{{baseUrl}}/users/:userId",
             "host": [
               "{{baseUrl}}"
             ],
             "path": [
-              "user",
+              "users",
               ":userId"
             ]
           }
