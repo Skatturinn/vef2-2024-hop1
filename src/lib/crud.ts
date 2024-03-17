@@ -336,10 +336,10 @@ export async function updateUser(req: Request, res: Response, next: NextFunction
 	const { isadmin, username, password, avatar, group_id } = req.body;
 	const hashedPassword = await hashPassword(password);
 	let avatarUrl = '';
-			if (avatar) {
-				const uploadResult = await uploadImage(avatar);
-				avatarUrl = typeof uploadResult === 'string' ? uploadResult : '';
-			}
+	if (avatar) {
+		const uploadResult = await uploadImage(avatar);
+		avatarUrl = typeof uploadResult === 'string' ? uploadResult : '';
+	}
 	const fields = [
 		typeof isadmin === 'string' && isadmin ? 'isadmin' : null,
 		typeof username === 'string' && username ? 'username' : null,
@@ -431,7 +431,7 @@ export const createGroupHandler = [
 	genericSanitizer('admin_id'),
 	async (req: Request, res: Response, next: NextFunction) => {
 		try {
-			const {admin_id , name} = req.body;
+			const { admin_id, name } = req.body;
 			const user = await getUserById(admin_id);
 			if (!user) {
 				res.status(400).json({ error: 'admin_id er ekki valid' })
@@ -516,8 +516,8 @@ export const patchGroup = [
 			const user = await getUserById(Number.parseInt(value)) as { isadmin: boolean } | null;
 			return user && user?.isadmin || false
 		})
-    .withMessage('Notandi þarf að vera til og vera admin')
-    .optional(true,
+		.withMessage('Notandi þarf að vera til og vera admin')
+		.optional(true),
 	xssSanitizer('admin_id'),
 	xssSanitizer('name'),
 	validationCheck,
