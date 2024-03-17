@@ -1,5 +1,7 @@
 - Uppsetning
-    				npm install
+
+
+  				npm install
 
 - Keyrir 
 
