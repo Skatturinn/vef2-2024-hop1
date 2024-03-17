@@ -8,7 +8,6 @@ import { catchErrors } from '../lib/catch-errors.js';
 import {
 	getProjects,
 	getProjectByIdHandler,
-	createProjectHandler,
 	deleteProjectHandler,
 	createUserHandler,
 	deleteUserHandler,
@@ -20,7 +19,8 @@ import {
 	getGroupsResponse,
 	patchProject,
 	patchUser,
-	patchGroup
+	patchGroup,
+	postProject
 } from '../lib/crud.js';
 
 dotenv.config();
@@ -131,7 +131,7 @@ router.post('/login', async (req, res) => {
 
 // Project routes
 router.get('/projects', catchErrors(getProjects));
-router.post('/projects', createProjectHandler);
+router.post('/projects', authenticate, postProject);
 router.delete('/projects/:projectId', authenticate, isAdmin, deleteProjectHandler);
 router.get('/projects/:projectId', getProjectByIdHandler);
 router.patch('/projects/:projectId', authenticate, isInGroup, patchProject);
@@ -141,11 +141,11 @@ router.get('/users', catchErrors(getUsers));
 router.post('/users', createUserHandler);
 router.delete('/users/:userId', authenticate, isAdmin, deleteUserHandler);
 router.get('/users/:userId', getUserByIdHandler);
-router.patch('/user/:userId', patchUser);
+router.patch('/user/:userId', authenticate, patchUser);
 
 // Group routes
 router.get('/groups', catchErrors(getGroupsResponse));
-router.post('/groups', createGroupHandler);
+router.post('/groups', authenticate, isAdmin, createGroupHandler);
 router.delete('/groups/:groupId', authenticate, isAdmin, deleteGroupHandler);
 router.get('/groups/:groupId', getGroupByIdHandler);
 router.patch('/groups/:groupId', authenticate, isAdmin, patchGroup);

@@ -1,5 +1,5 @@
 import passport from "passport";
-import { Strategy as JwtStrategy, ExtractJwt, StrategyOptions, VerifyCallback } from "passport-jwt";
+import { Strategy as JwtStrategy, ExtractJwt, StrategyOptions } from "passport-jwt";
 import { Request, Response, NextFunction } from "express";
 import { pool, getProjectById } from "./db.js";
 
@@ -43,8 +43,6 @@ passport.use(new JwtStrategy(options, async (jwt_payload: JwtPayload, done) => {
 }));
 
 export function isAdmin(req: Request, res: Response, next: NextFunction): void {
-	console.log(req.user);
-	console.log('Checking if admin...');
 	if (req.user && req.user.isadmin) {
 		next();
 	} else {
@@ -68,7 +66,6 @@ export async function isInGroup(req: Request, res: Response, next: NextFunction)
 }
 
 export function authenticate(req: Request, res: Response, next: NextFunction): void {
-	console.log('Authenticating...');
 	passport.authenticate('jwt', { session: false }, (err: Error, user: Express.User | null) => {
 		if (err) {
 			return res.status(400).json({ message: err.message });

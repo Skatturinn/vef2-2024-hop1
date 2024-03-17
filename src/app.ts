@@ -2,8 +2,6 @@ import express, { Request, Response } from 'express';
 import passport from 'passport';
 import { cors } from './lib/cors.js';
 import { router } from './routes/api.js';
-import { create } from './setup.js';
-
 
 const app = express();
 
