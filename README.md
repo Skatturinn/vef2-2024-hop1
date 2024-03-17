@@ -1,9 +1,20 @@
 - npm install
+
 Keyrir 
+
+
 - npm run dev
+
+  
 test
+
+
 - npm run test
+
+  
 lint
+
+
 -npm run lint
 
 # Kanban Borð
@@ -24,6 +35,8 @@ Færð Authorization key, fyrir admin only aðferðir þá þarf að fara í Hea
 ## Authentication
 
 - **POST /login**: Authenticate á user
+
+  
 body:				{
 							username: string,
 							password: string
@@ -33,6 +46,8 @@ body:				{
 
 - **GET /users**: Skilar öllum users með stuðning við filters með queries.
 - **POST /users**: Búa til nýjan user.
+
+
   					body:	{
 							isadmin: boolean,
 							username: string,
@@ -40,6 +55,8 @@ body:				{
 						}
 - **GET /users/:userId**: Get á user.
 - **PATCH /users/:userID**: Patch á user (Admin or user owner only)
+
+
   body: {
   group_id: number
   }
@@ -49,12 +66,16 @@ body:				{
 
 - **GET /groups**: Skilar öllum hópum með stuðning við filters með queries.
 - **POST /groups**: Búa til nýjan hóp.
+
+
   body: {
 						admin_id: number,
 						name: string
 					}
 - **GET /groups/:groupId**: Get á hóp.
 - **PATCH /groups/:groupId**: Breyta hóp.
+
+
   body: { name: string }
 - **DELETE /groups/:groupId**: Delete hóp (Admin only).
 
@@ -62,12 +83,16 @@ body:				{
 
 - **GET /projects**: Skilar öllum verkefnum með stuðning við filters með queries.
 - **POST /projects**: Búa til nýtt verkefni.
+
+
 body: {
 						status: 0,
 						title: string
 					}
 - **GET /projects/:projectId**: Get á verkefni.
 - **PATCH /projects/:projectId**: Breyta verkefni (Admin or group member only).
+
+
   body: {
 						status: 1
 					}
