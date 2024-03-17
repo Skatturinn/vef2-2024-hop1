@@ -22,7 +22,7 @@ jobs:
       - name: Lint
         run: npm run lint
 
-    #   - name: Test
-    #     # Run this even if linting failed
-    #     if: always()
-    #     run: npm run test
+      - name: Test
+        # Run this even if linting failed
+        if: always()
+        run: npm run test

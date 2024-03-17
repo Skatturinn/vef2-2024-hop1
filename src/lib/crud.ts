@@ -22,7 +22,8 @@ import {
 	xssSanitizer,
 	genericSanitizer,
 	atLeastOneBodyValueValidator,
-	heiltalaStaerri
+	heiltalaStaerri,
+	paramtala
 } from './validation.js';
 import { uploadImage } from '../cloudinary.js';
 import { body } from 'express-validator';
@@ -72,8 +73,13 @@ export const getProjects = async (req: Request, res: Response) => {
  */
 export const getProjectByIdHandler = async (req: Request, res: Response, next: NextFunction) => {
 	try {
-		const { projectId } = req.params; // Assuming you're using route parameters
-		const project = await getProjectById(parseInt(projectId));
+		const { projectId } = req.params;
+		const id = paramtala(projectId);
+		if (!id) {
+			res.status(400).json({ error: '/projects/:projectId þarf að vera heiltata >0' })
+			return
+		}
+		const project = await getProjectById(id);
 		if (!project) {
 			return res.status(404).json({ message: 'Project not found' });
 		}
@@ -84,10 +90,20 @@ export const getProjectByIdHandler = async (req: Request, res: Response, next: N
 };
 
 export const deleteProjectHandler = async (req: Request, res: Response, next: NextFunction) => {
+	const { projectId } = req.params;
+	const id = paramtala(projectId);
+	if (!id) {
+		res.status(400).json({ error: '/projects/:projectId þarf að vera heiltala' });
+		return;
+	}
 	try {
-		const { projectId } = req.params;
+		const project = getProjectById(id);
+		if (!project) {
+			res.status(404);
+			return;
+		}
 		await delProject(parseInt(projectId));
-		res.status(204).end();
+		res.status(204).json({});
 	} catch (error) {
 		next(error);
 	}
@@ -99,12 +115,21 @@ export async function updateProject(
 ) {
 	const { projectId } = req.params;
 	const id = Number.parseInt(projectId)
+	if (!id) {
+		res.status(400).json({ error: '/projects/:projectId þarf að vera heiltala > 0' })
+	}
 	const project = await getProjectById(id);
-	if (!project && !project?.rows[0]) {
-		res.status(400).json('fann ekki verkefni með umbeðið id');
+	if (!project) {
+		res.status(400).json({ error: 'fann ekki verkefni með umbeðið id' });
 		return
 	}
-	const { group_id, assigned_id, title, status, description, } = req.body;
+	if (!(req.user && (req.user.isadmin || req.user.group_id === project.group_id))) {
+		res.status(403).send('Insufficient permissions: not in the project\'s group');
+		return
+	}
+	let { group_id } = req.body;
+	const { assigned_id, title, status, description } = req.body;
+	group_id = Number.parseInt(group_id) || req.user?.group_id;
 	const fields = [
 		typeof group_id === 'string' && group_id ? 'group_id' : null,
 		typeof assigned_id === 'string' && assigned_id ? 'assigned_id' : null,
@@ -113,18 +138,8 @@ export async function updateProject(
 		typeof description === 'string' && description ? 'description' : null
 	]
 	const villa = [];
-	if (assigned_id) {
-		const user = await getUserById(Number.parseInt(assigned_id));
-		if (!user) {
-			villa.push('assigned_id')
-		}
-	}
-	if (group_id) {
-		const group = await getGroupById(Number.parseInt(group_id));
-		if (!group) {
-			villa.push('group_id')
-		}
-	}
+	assigned_id && !(await getUserById(Number.parseInt(assigned_id))) && villa.push('assigned_id');
+	group_id && !(await getGroupById(group_id)) && villa.push('group_id' + typeof group_id + group_id)
 	if (villa.length > 0) {
 		res.status(400).json({ error: `fann ekki eftirfarandi: ${villa.join(', ')}` })
 		return
@@ -154,7 +169,7 @@ export async function updateProject(
 
 export const patchProject = [
 	atLeastOneBodyValueValidator(['group_id', 'assigned_id', 'title', 'status', 'description']),
-	stringValidator({ field: 'title', minLength: 3, maxLength: 64, optional: false }), // min 3 max 128
+	stringValidator({ field: 'title', minLength: 3, maxLength: 64, optional: true }), // min 3 max 128
 	stringValidator({ field: 'description', optional: true }),
 	body('group_id')
 		.trim()
@@ -188,8 +203,8 @@ export const patchProject = [
 export const postProject = [
 	stringValidator({ field: 'description', optional: true }),
 	stringValidator({ field: 'title', optional: false }),
-	heiltalaStaerri('group_id', false),
-	heiltalaStaerri('creator_id', false),
+	heiltalaStaerri('group_id', true),
+	heiltalaStaerri('creator_id', true),
 	heiltalaStaerri('assigned_id', true),
 	body('status')
 		.trim()
@@ -209,7 +224,10 @@ export const postProject = [
 	genericSanitizer('assigned_id'),
 	genericSanitizer('status'),
 	async (req: Request, res: Response) => {
-		const { group_id, creator_id, assigned_id, title, status, description } = req.body;
+		let { group_id, creator_id } = req.body;
+		const { assigned_id, title, status, description } = req.body;
+		group_id = group_id || req.user?.group_id;
+		creator_id = creator_id || req.user?.id;
 		const group = await getGroupById(Number.parseInt(group_id));
 		const creator = await getUserById(Number.parseInt(creator_id));
 		if (!group || !creator) {
@@ -219,7 +237,8 @@ export const postProject = [
 			})
 			return
 		}
-		const project = await createProject(group_id, creator_id, assigned_id, title, status, description);
+		const project = await createProject(group_id, creator_id, Number.parseInt(assigned_id) || null, title, status || 0, description);
+
 		if (!project) {
 			res.status(500).json({ error: 'Tókst ekki að stofna verkefni' })
 			return
@@ -258,6 +277,16 @@ export const createUserHandler = [
 		.trim()
 		.isBoolean()
 		.withMessage('Þarf að vera tilgreint hvort notandi sé admin eða ekki'),
+	body('avatar')
+		.custom(value => URL.canParse(value))
+		.withMessage('avatar þarf að vera gildur hlekkur')
+		.custom(value => {
+			const filetype = (new URL(value)).pathname.split('.');
+			return (filetype.includes('png')) || filetype.includes('jpeg')
+		}
+		)
+		.withMessage('mynd þarf að vera png eða jpg')
+		.optional(true),
 	xssSanitizer('isadmin'),
 	xssSanitizer('group_id'),
 	xssSanitizer('username'),
@@ -279,7 +308,6 @@ export const createUserHandler = [
 			}
 			if (username) {
 				const user = await getUserByUsername(username);
-				console.log(user)
 				if (user) {
 					res.status(400).json({ error: 'Notandanafn frátekið' })
 					return
@@ -289,11 +317,16 @@ export const createUserHandler = [
 			let avatarUrl = '';
 			if (avatar) {
 				const uploadResult = await uploadImage(avatar);
+				// if (!uploadResult) {
+				// 	res.status(500).json({error: 'gat ekki hlaðið upp mynd'});
+				// 	return
+				// }
 				avatarUrl = typeof uploadResult === 'string' ? uploadResult : '';
 			}
-			const user = await createUser(isadmin, username, hashedPassword, avatarUrl, Number.parseInt(group_id));
+			const user = await createUser(isadmin, username, hashedPassword, avatarUrl, Number.parseInt(group_id) || null);
 			if (!user) {
 				res.status(500).json({ error: 'ekki tókst að stofna notanda' })
+				return
 			}
 			res.status(201).json(user);
 		} catch (error) {
@@ -304,10 +337,15 @@ export const createUserHandler = [
 
 
 export const deleteUserHandler = async (req: Request, res: Response, next: NextFunction) => {
+	const { userId } = req.params;
+	const id = paramtala(userId)
+	if (!id) {
+		res.status(400).json({ error: '/users/:userId þarf að vera heiltala > 0' });
+		return;
+	}
 	try {
-		const { userId } = req.params;
-		await delUser(parseInt(userId));
-		res.status(204).end();
+		await delUser(id);
+		res.status(204).json({});
 	} catch (error) {
 		next(error);
 	}
@@ -316,9 +354,10 @@ export const deleteUserHandler = async (req: Request, res: Response, next: NextF
 export const getUserByIdHandler = async (req: Request, res: Response, next: NextFunction) => {
 	try {
 		const { userId } = req.params;
-		const user = await getUserById(Number.parseInt(userId));
+		const user = Number(userId) > 0 && await getUserById(Number.parseInt(userId));
 		if (!user) {
-			return res.status(404).json({ message: 'User not found' });
+			res.status(400).json({ error: `notandi fannst ekki á skrá með id=${userId}, id á að vera heiltala stærri en 0` });
+			return
 		}
 		res.status(200).json(user);
 	} catch (error) {
@@ -330,15 +369,20 @@ export async function updateUser(req: Request, res: Response, next: NextFunction
 	const { userId } = req.params;
 	const user = Number(userId) > 0 && await getUserById(Number.parseInt(userId));
 	if (!user) {
-		res.status(400).json({ error: 'notandi fannst ekki á skrá með id=userId' });
+		res.status(400).json({ error: `notandi fannst ekki á skrá með id=${userId}, id á að vera heiltala stærri en 0` });
 		return
 	}
 	const { isadmin, username, password, avatar, group_id } = req.body;
+	if (!req.user || !req.user.isadmin || req.user.id !== user.id) {
+		res.status(403).send('Insufficient permissions: only the account owner or an admin can perform this action');
+		return
+	}
 	const hashedPassword = await hashPassword(password);
 	let avatarUrl = '';
 	if (avatar) {
 		const uploadResult = await uploadImage(avatar);
 		avatarUrl = typeof uploadResult === 'string' ? uploadResult : '';
+		console.log(avatarUrl)
 	}
 	const fields = [
 		typeof isadmin === 'string' && isadmin ? 'isadmin' : null,
@@ -374,16 +418,25 @@ export async function updateUser(req: Request, res: Response, next: NextFunction
 	res.status(200).json(updated)
 
 }
+export function isUrlValid(string: string): string {
+	return URL.canParse(string) ? (new URL(string)).href : '';
+}
 export const patchUser = [
 	atLeastOneBodyValueValidator(['isadmin', 'username', 'password', 'avatar', 'group_id']),
 	stringValidator({ field: 'username', minLength: 3, maxLength: 255, optional: true }),
 	stringValidator({ field: 'password', minLength: 3, maxLength: 255, optional: true }),
 	stringValidator({ field: 'avatar', minLength: 3, maxLength: 255, optional: true }),
-	body('group_id')
-		.trim()
-		.isInt({ min: 1 })
-		.withMessage('group_id þarf að vera heiltala stærri en 1')
+	body('avatar')
+		.custom(value => URL.canParse(value))
+		.withMessage('avatar þarf að vera gildur hlekkur')
+		.custom(value => {
+			const filetype = (new URL(value)).pathname.split('.');
+			return (filetype.includes('png')) || filetype.includes('jpeg')
+		}
+		)
+		.withMessage('mynd þarf að vera png eða jpg')
 		.optional(true),
+	heiltalaStaerri('group_id', true),
 	body('isadmin')
 		.trim()
 		.isBoolean()
@@ -423,7 +476,7 @@ export const getGroupsResponse = async (req: Request, res: Response) => {
 
 export const createGroupHandler = [
 	stringValidator({ field: 'name', minLength: 3, maxLength: 255, optional: false }),
-	heiltalaStaerri('admin_id', false),
+	heiltalaStaerri('admin_id', true),
 	xssSanitizer('name'),
 	xssSanitizer('admin_id'),
 	validationCheck,
@@ -431,7 +484,9 @@ export const createGroupHandler = [
 	genericSanitizer('admin_id'),
 	async (req: Request, res: Response, next: NextFunction) => {
 		try {
-			const { admin_id, name } = req.body;
+			let { admin_id } = req.body;
+			admin_id = Number.parseInt(admin_id) || req.user?.id
+			const { name } = req.body;
 			const user = await getUserById(admin_id);
 			if (!user) {
 				res.status(400).json({ error: 'admin_id er ekki valid' })
@@ -440,7 +495,6 @@ export const createGroupHandler = [
 			if (!user.isadmin) {
 				res.status(400).json({ error: 'admin_id Notandi er ekki admin' })
 			}
-			console.log(user)
 			const group = await createGroup(admin_id, name);
 			res.status(201).json(group);
 		} catch (error) {
@@ -450,10 +504,15 @@ export const createGroupHandler = [
 ];
 
 export const deleteGroupHandler = async (req: Request, res: Response, next: NextFunction) => {
+	const { groupId } = req.params;
+	const id = paramtala(groupId);
+	if (!id) {
+		res.status(400).json({ error: '/groups/:groupId þarf að vera heilta > 0' })
+		return
+	}
 	try {
-		const { group_id } = req.params;
-		await delGroup(parseInt(group_id));
-		res.status(204).end();
+		await delGroup(Number.parseInt(groupId));
+		res.status(204).json({});
 	} catch (error) {
 		next(error);
 	}
@@ -462,13 +521,19 @@ export const deleteGroupHandler = async (req: Request, res: Response, next: Next
 export const getGroupByIdHandler = async (req: Request, res: Response, next: NextFunction) => {
 	try {
 		const { groupId } = req.params;
-		const group = await getGroupById(parseInt(groupId));
-		if (group && group.rowCount === 0) {
-			return res.status(404).json({ message: 'Group not found' });
+		const id = paramtala(groupId);
+		if (!id) {
+			res.status(400).json({ error: '/groups/:groupId þarf að vera heiltala > 0' })
+			return
 		}
-		if (group) {
-			res.status(200).json(group);
+		const group = await getGroupById(id);
+		if (!group) {
+			res.status(404).json({ message: 'Group not found' });
+			return
 		}
+
+		res.status(200).json(group);
+
 	} catch (error) {
 		next(error);
 	}
@@ -476,7 +541,11 @@ export const getGroupByIdHandler = async (req: Request, res: Response, next: Nex
 
 export async function updateGroup(req: Request, res: Response) {
 	const { groupId } = req.params;
-	const id = Number.parseInt(groupId);
+	const id = paramtala(groupId);
+	if (!id) {
+		res.status(400).json('groups/:groupId þarf að vera heiltala > 0');
+		return
+	}
 	const group = await getGroupById(id);
 	if (!group) {
 		res.status(400).json('fann ekki hóp með viðeigandi id');
@@ -516,7 +585,7 @@ export const patchGroup = [
 			const user = await getUserById(Number.parseInt(value)) as { isadmin: boolean } | null;
 			return user && user?.isadmin || false
 		})
-		.withMessage('Notandi þarf að vera til og vera admin')
+		.withMessage('admin_id notandi þarf að vera til og vera admin')
 		.optional(true),
 	xssSanitizer('admin_id'),
 	xssSanitizer('name'),

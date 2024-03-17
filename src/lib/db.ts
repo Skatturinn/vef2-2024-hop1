@@ -41,7 +41,7 @@ pool.on('error', (err: Error) => {
 	process.exit(-1);
 });
 
-export async function query(q: string, values: Array<number | string | boolean | Date> = []) {
+export async function query(q: string, values: Array<number | string | boolean | Date | null> = []) {
 	let client;
 	try {
 		client = await pool.connect();
@@ -64,7 +64,7 @@ export async function query(q: string, values: Array<number | string | boolean |
 
 // Project functions
 
-export async function createProject(groupId: number, creatorId: number, assigned_id: number, title: string, status: number, description: string) {
+export async function createProject(groupId: number, creatorId: number, assigned_id: number | null, title: string, status: number, description: string) {
 	const queryText = `INSERT INTO projects(group_id, creator_id, assigned_id, date_created, title, status,  description) VALUES ($1, $2, $3, CURRENT_DATE, $4, $5, $6) RETURNING id;`;
 	const result = await query(queryText, [groupId, creatorId, assigned_id, title, status, description]);
 	return result && result.rows[0] || null
@@ -93,7 +93,6 @@ export async function getProjectsHandler(
 	const filteredValues = values.filter(
 		(i): i is number => typeof i === 'number',
 	);
-	console.log(filteredFields, filteredValues)
 	let p = '';
 	if (filteredFields.length !== 0) {
 		const params = filteredFields.map((field, i) => `${field} = $${i + 1}`);
@@ -110,28 +109,10 @@ export async function getProjectsHandler(
 	}
 }
 
-export async function getProjectsByGroupId(groupId: number) {
-	const queryText = `SELECT * FROM projects WHERE group_id = $1;`;
-	return query(queryText, [groupId]);
-}
-
-export async function getProjectsByUserId(userId: number) {
-	const queryText = `SELECT * FROM projects WHERE creator_id = $1;`;
-	return query(queryText, [userId]);
-}
-
 export async function getProjectById(projectId: number) {
 	const queryText = `SELECT * FROM projects WHERE id = $1;`;
 	const result = await query(queryText, [projectId])
-	if (result && result?.rows) {
-		return result.rows[0]
-	}
-	return null;
-}
-
-export async function getProjectsByStatus(status: number) {
-	const queryText = `SELECT * FROM projects WHERE status = $1;`;
-	return query(queryText, [status]);
+	return result && result?.rows[0] || null;
 }
 
 // User functions
@@ -157,11 +138,9 @@ export async function loginUser(username: string): Promise<IUser | null> {
 	}
 }
 
-export async function createUser(isadmin: boolean | '', username: string, password: string, avatarUrl: string, group_id: number) {
-	console.log(`Executing query with params:`, { isadmin, username, password, avatarUrl });
+export async function createUser(isadmin: boolean | '', username: string, password: string, avatarUrl: string, group_id: number | null) {
 	const queryText = `INSERT INTO Users(isadmin, username, password, avatar, group_id) VALUES ($1, $2, $3, $4, $5) RETURNING id;`;
 	const result = await query(queryText, [isadmin, username, password, avatarUrl, group_id])
-	console.log(result?.rows)
 	return result && result.rows[0] || null;
 }
 
@@ -197,10 +176,14 @@ export async function getGroups(page: number, admin_id: false | number) {
 
 export async function createGroup(admin_id: number, name: string) {
 	const queryText = `INSERT INTO Groups(admin_id, name) VALUES ($1, $2) RETURNING id;`;
-	return query(queryText, [admin_id, name]);
+	const result = await query(queryText, [admin_id, name])
+	return result && result?.rows[0] || null;
 }
 
 export async function delGroup(groupId: number) {
+	if (!(Number(groupId) > 0)) {
+		return null
+	}
 	const queryText = `DELETE FROM Groups WHERE id = $1;`;
 	return query(queryText, [groupId]);
 }
@@ -208,10 +191,7 @@ export async function delGroup(groupId: number) {
 export async function getGroupById(groupId: number) {
 	const queryText = `SELECT * FROM Groups WHERE id = $1;`;
 	const result = await query(queryText, [groupId]);
-	if (result && result.rows[0]) {
-		return result.rows[0]
-	}
-	return null;
+	return result && result.rows[0] || null;
 }
 
 export async function dropSchema(dropFile = DROP_SCHEMA_FILE) {
