@@ -141,7 +141,7 @@ router.get('/users', catchErrors(getUsers));
 router.post('/users', createUserHandler);
 router.delete('/users/:userId', authenticate, isAdmin, deleteUserHandler);
 router.get('/users/:userId', getUserByIdHandler);
-router.patch('/user/:userId', authenticate, isUserOwnerOrAdmin, patchUser);
+router.patch('/users/:userId', authenticate, isUserOwnerOrAdmin, patchUser);
 
 // Group routes
 router.get('/groups', catchErrors(getGroupsResponse));

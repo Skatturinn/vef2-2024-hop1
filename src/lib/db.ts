@@ -157,10 +157,10 @@ export async function loginUser(username: string): Promise<IUser | null> {
 	}
 }
 
-export async function createUser(isAdmin: boolean, username: string, password: string, avatarUrl: string, group_id: number) {
-	console.log(`Executing query with params:`, { isAdmin, username, password, avatarUrl, group_id });
-	const queryText = `INSERT INTO Users(isAdmin, username, password, avatar, group_id) VALUES ($1, $2, $3, $4, $5) RETURNING id;`;
-	return query(queryText, [isAdmin, username, password, avatarUrl, group_id]);
+export async function createUser(isadmin: boolean, username: string, password: string, avatarUrl: string, group_id: number) {
+	console.log(`Executing query with params:`, { isadmin, username, password, avatarUrl, group_id });
+	const queryText = `INSERT INTO Users(isadmin, username, password, avatar, group_id) VALUES ($1, $2, $3, $4, $5) RETURNING id;`;
+	return query(queryText, [isadmin, username, password, avatarUrl, group_id]);
 }
 
 export async function delUser(userId: number) {
