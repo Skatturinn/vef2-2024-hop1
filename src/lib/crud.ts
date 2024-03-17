@@ -27,7 +27,6 @@ import {
 import { uploadImage } from '../cloudinary.js';
 import { body } from 'express-validator';
 
-
 // Middleware fyrir projects
 
 export const getProjects = async (req: Request, res: Response) => {
@@ -270,7 +269,7 @@ export const createUserHandler = [
 			}
 			if (username) {
 				const user = await getUserByUsername(username);
-				if (user == username) {
+				if (user) {
 					res.status(400).json({ error: 'Notandanafn frátekið' })
 					return
 				}

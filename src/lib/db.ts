@@ -157,10 +157,12 @@ export async function loginUser(username: string): Promise<IUser | null> {
 	}
 }
 
-export async function createUser(isadmin: boolean, username: string, password: string, avatarUrl: string, group_id: number) {
-	console.log(`Executing query with params:`, { isadmin, username, password, avatarUrl, group_id });
+export async function createUser(isadmin: boolean | '', username: string, password: string, avatarUrl: string, group_id: number) {
+	console.log(`Executing query with params:`, { isadmin, username, password, avatarUrl });
 	const queryText = `INSERT INTO Users(isadmin, username, password, avatar, group_id) VALUES ($1, $2, $3, $4, $5) RETURNING id;`;
-	return query(queryText, [isadmin, username, password, avatarUrl, group_id]);
+	const result = await query(queryText, [isadmin, username, password, avatarUrl, group_id])
+	console.log(result?.rows)
+	return result && result.rows[0] || null;
 }
 
 export async function delUser(userId: number) {

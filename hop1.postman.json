@@ -140,7 +140,7 @@
           "header": [],
           "body": {
             "mode": "raw",
-            "raw": "{\n    \"isAdmin\": false,\n    \"username\": \"user1\",\n    \"password\": \"password\",\n    \"avatar\": \"avatar.png\",\n    \"group_id\": \"1\"\n}",
+            "raw": "{\n    \"isadmin\": false,\n    \"username\": \"user1\",\n    \"password\": \"password\",\n    \"avatar\": \"avatar.png\",\n    \"group_id\": \"1\"\n}",
             "options": {
               "raw": {
                 "language": "json"
@@ -184,7 +184,7 @@
           "header": [],
           "body": {
             "mode": "raw",
-            "raw": "{\n    \"isAdmin\": false,\n    \"username\": \"user1\",\n    \"password\": \"password\",\n    \"avatar\": \"avatar.png\",\n    \"group_id\": \"1\"\n}",
+            "raw": "{\n    \"isadmin\": false,\n    \"username\": \"user1\",\n    \"password\": \"password\",\n    \"avatar\": \"avatar.png\",\n    \"group_id\": \"1\"\n}",
             "options": {
               "raw": {
                 "language": "json"
