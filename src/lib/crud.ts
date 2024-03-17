@@ -164,8 +164,8 @@ export const patchProject = [
 		.optional(true),
 	body('status')
 		.trim()
-		.isInt({ min: 0, max: 3 })
-		.withMessage('status þarf að vera heiltala á bilinu 0 til 3')
+		.isInt({ min: 0, max: 5 })
+		.withMessage('status þarf að vera heiltala á bilinu 0 til 5')
 		.optional(true),
 	xssSanitizer('title'),
 	xssSanitizer('description'),
