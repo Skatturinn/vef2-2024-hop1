@@ -1,7 +1,7 @@
 import { body, validationResult } from 'express-validator';
 import { Request, Response, NextFunction } from 'express';
 import xss from 'xss';
-import { getUserByUsername, getGroupById, getProjectById } from './db.js';
+import { getGroupById, getProjectById } from './db.js';
 
 export const stringValidator = ({
 	field = '',

@@ -18,9 +18,6 @@ import {
 } from './db.js';
 import {
 	stringValidator,
-	usernameMustBeUnique,
-	validateProjectStatus,
-	groupMustExist,
 	validationCheck,
 	xssSanitizer,
 	genericSanitizer,
@@ -29,8 +26,6 @@ import {
 } from './validation.js';
 import { uploadImage } from '../cloudinary.js';
 import { body } from 'express-validator';
-import { authenticate } from 'passport';
-import { isAdmin } from './auth.js';
 
 // Middleware fyrir projects
 
@@ -344,7 +339,7 @@ export async function updateUser(req: Request, res: Response, next: NextFunction
 		return
 	}
 	const { isAdmin, username, password, avatar, group_id } = req.body;
-	if (!req.user || req.user.id !== Number.parseInt(userId)) {
+	if (!req.user || req.user?.id !== Number.parseInt(userId)) {
 		res.status(403).send('Insufficient permissions: not in the project\'s group');
 		return
 	}

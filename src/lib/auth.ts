@@ -1,5 +1,5 @@
 import passport from "passport";
-import { Strategy as JwtStrategy, ExtractJwt, StrategyOptions, VerifyCallback } from "passport-jwt";
+import { Strategy as JwtStrategy, ExtractJwt, StrategyOptions } from "passport-jwt";
 import { Request, Response, NextFunction } from "express";
 import { pool, getProjectById } from "./db.js";
 
