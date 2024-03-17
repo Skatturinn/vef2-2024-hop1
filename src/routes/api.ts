@@ -3,7 +3,7 @@ import express, { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { loginUser } from '../lib/db.js';
-import { authenticate, isAdmin, isInGroup } from '../lib/auth.js';
+import { authenticate, isAdmin, isInGroup, isUserOwnerOrAdmin } from '../lib/auth.js';
 import { catchErrors } from '../lib/catch-errors.js';
 import {
 	getProjects,
@@ -141,7 +141,7 @@ router.get('/users', catchErrors(getUsers));
 router.post('/users', createUserHandler);
 router.delete('/users/:userId', authenticate, isAdmin, deleteUserHandler);
 router.get('/users/:userId', getUserByIdHandler);
-router.patch('/user/:userId', authenticate, patchUser);
+router.patch('/user/:userId', authenticate, isUserOwnerOrAdmin, patchUser);
 
 // Group routes
 router.get('/groups', catchErrors(getGroupsResponse));

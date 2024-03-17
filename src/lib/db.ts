@@ -157,10 +157,10 @@ export async function loginUser(username: string): Promise<IUser | null> {
 	}
 }
 
-export async function createUser(isAdmin: boolean, username: string, password: string, avatarUrl: string) {
-	console.log(`Executing query with params:`, { isAdmin, username, password, avatarUrl });
-	const queryText = `INSERT INTO Users(isAdmin, username, password, avatar) VALUES ($1, $2, $3, $4) RETURNING id;`;
-	return query(queryText, [isAdmin, username, password, avatarUrl]);
+export async function createUser(isAdmin: boolean, username: string, password: string, avatarUrl: string, group_id: number) {
+	console.log(`Executing query with params:`, { isAdmin, username, password, avatarUrl, group_id });
+	const queryText = `INSERT INTO Users(isAdmin, username, password, avatar, group_id) VALUES ($1, $2, $3, $4, $5) RETURNING id;`;
+	return query(queryText, [isAdmin, username, password, avatarUrl, group_id]);
 }
 
 export async function delUser(userId: number) {
@@ -195,9 +195,9 @@ export async function getGroups(page: number, admin_id: false | number) {
 	return result?.rows
 }
 
-export async function createGroup(id: number, admin_id: number) {
-	const queryText = `INSERT INTO Groups(id, admin_id, admin_avatar) VALUES ($1, $2, $3) RETURNING id;`;
-	return query(queryText, [id, admin_id, 'default.jpg']);
+export async function createGroup(admin_id: number, name: string) {
+	const queryText = `INSERT INTO Groups(admin_id, name) VALUES ($1, $2) RETURNING id;`;
+	return query(queryText, [admin_id, name]);
 }
 
 export async function delGroup(groupId: number) {
