@@ -317,11 +317,11 @@ export const createUserHandler = [
 			let avatarUrl = '';
 			if (avatar) {
 				const uploadResult = await uploadImage(avatar);
-				// if (!uploadResult) {
-				// 	res.status(500).json({error: 'gat ekki hlaðið upp mynd'});
-				// 	return
-				// }
-				avatarUrl = typeof uploadResult === 'string' ? uploadResult : '';
+				if (!uploadResult) {
+					res.status(500).json({ error: 'gat ekki hlaðið upp mynd' });
+					return
+				}
+				avatarUrl = uploadResult;
 			}
 			const user = await createUser(isadmin, username, hashedPassword, avatarUrl, Number.parseInt(group_id) || null);
 			if (!user) {

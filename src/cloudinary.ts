@@ -22,10 +22,10 @@ export const uploadImage = async (imagePath: string) => {
 
 	try {
 		const result = await cloudinary.uploader.upload(imagePath, options);
-		return result.public_id;
+		return result && result.public_id || null;
 	} catch (error) {
 		console.error("Error uploading image:", error);
-		throw error;
+		return null
 	}
 };
 
