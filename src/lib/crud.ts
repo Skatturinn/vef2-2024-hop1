@@ -61,7 +61,7 @@ export const getProjects = async (req: Request, res: Response) => {
 	} else {
 		const projects = await getProjectsHandler(fields, values, stikar.page || 0);
 		if (!projects) {
-			res.status(500).json({ error: 'villa við að sækja umbeðin verkefni, vinsamlegast reynið aftur' })
+			res.status(500).json({ error: 'Villa við að sækja umbeðin verkefni, vinsamlegast reynið aftur' })
 		} else {
 			res.status(200).json(projects?.length > 0 ? projects : { message: 'Engar niðurstöður' });
 		}
@@ -76,7 +76,7 @@ export const getProjectByIdHandler = async (req: Request, res: Response, next: N
 		const { projectId } = req.params;
 		const id = paramtala(projectId);
 		if (!id) {
-			res.status(400).json({ error: '/projects/:projectId þarf að vera heiltata >0' })
+			res.status(400).json({ error: '/projects/:projectId þarf að vera heiltala > 0' })
 			return
 		}
 		const project = await getProjectById(id);
@@ -282,7 +282,7 @@ export const createUserHandler = [
 		.withMessage('avatar þarf að vera gildur hlekkur')
 		.custom(value => {
 			const filetype = (new URL(value)).pathname.split('.');
-			return (filetype.includes('png')) || filetype.includes('jpeg')
+			return (filetype.includes('png')) || filetype.includes('jpg')
 		}
 		)
 		.withMessage('mynd þarf að vera png eða jpg')
@@ -325,7 +325,7 @@ export const createUserHandler = [
 			}
 			const user = await createUser(isadmin, username, hashedPassword, avatarUrl, Number.parseInt(group_id) || null);
 			if (!user) {
-				res.status(500).json({ error: 'ekki tókst að stofna notanda' })
+				res.status(500).json({ error: 'Ekki tókst að stofna notanda' })
 				return
 			}
 			res.status(201).json(user);
@@ -356,7 +356,7 @@ export const getUserByIdHandler = async (req: Request, res: Response, next: Next
 		const { userId } = req.params;
 		const user = Number(userId) > 0 && await getUserById(Number.parseInt(userId));
 		if (!user) {
-			res.status(400).json({ error: `notandi fannst ekki á skrá með id=${userId}, id á að vera heiltala stærri en 0` });
+			res.status(400).json({ error: `Notandi fannst ekki á skrá með id=${userId}, id á að vera heiltala stærri en 0` });
 			return
 		}
 		res.status(200).json(user);
@@ -369,12 +369,12 @@ export async function updateUser(req: Request, res: Response, next: NextFunction
 	const { userId } = req.params;
 	const user = Number(userId) > 0 && await getUserById(Number.parseInt(userId));
 	if (!user) {
-		res.status(400).json({ error: `notandi fannst ekki á skrá með id=${userId}, id á að vera heiltala stærri en 0` });
+		res.status(400).json({ error: `Notandi fannst ekki á skrá með id=${userId}, id á að vera heiltala stærri en 0` });
 		return
 	}
 	const { isadmin, username, password, avatar, group_id } = req.body;
 	if (!req.user || !req.user.isadmin || req.user.id !== user.id) {
-		res.status(403).send('Insufficient permissions: only the account owner or an admin can perform this action');
+		res.status(403).send('Ekki heimilað: aðeins eigandi aðgangs eða admin getur breytt notanda');
 		return
 	}
 	const hashedPassword = await hashPassword(password);
@@ -412,7 +412,7 @@ export async function updateUser(req: Request, res: Response, next: NextFunction
 	)
 
 	if (!updated) {
-		return next(new Error('unable to update team'));
+		return next(new Error('Gat ekki uppfært notanda'));
 	}
 
 	res.status(200).json(updated)
@@ -431,7 +431,7 @@ export const patchUser = [
 		.withMessage('avatar þarf að vera gildur hlekkur')
 		.custom(value => {
 			const filetype = (new URL(value)).pathname.split('.');
-			return (filetype.includes('png')) || filetype.includes('jpeg')
+			return (filetype.includes('png')) || filetype.includes('jpg')
 		}
 		)
 		.withMessage('mynd þarf að vera png eða jpg')
@@ -528,7 +528,7 @@ export const getGroupByIdHandler = async (req: Request, res: Response, next: Nex
 		}
 		const group = await getGroupById(id);
 		if (!group) {
-			res.status(404).json({ message: 'Group not found' });
+			res.status(404).json({ message: 'Hópur fannst ekki' });
 			return
 		}
 
@@ -548,7 +548,7 @@ export async function updateGroup(req: Request, res: Response) {
 	}
 	const group = await getGroupById(id);
 	if (!group) {
-		res.status(400).json('fann ekki hóp með viðeigandi id');
+		res.status(400).json('Fann ekki hóp með viðeigandi id');
 		return
 	}
 	const { name } = req.body;
