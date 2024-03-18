@@ -382,7 +382,10 @@ export async function updateUser(req: Request, res: Response, next: NextFunction
 	if (avatar) {
 		const uploadResult = await uploadImage(avatar);
 		avatarUrl = typeof uploadResult === 'string' ? uploadResult : '';
-		console.log(avatarUrl)
+		if (!avatarUrl) {
+			res.status(500).json({ error: 'ekki tókst að hlaða upp mynd' });
+			return
+		}
 	}
 	const fields = [
 		typeof isadmin === 'string' && isadmin ? 'isadmin' : null,
