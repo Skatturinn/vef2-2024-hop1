@@ -81,7 +81,7 @@ export const getProjectByIdHandler = async (req: Request, res: Response, next: N
 		}
 		const project = await getProjectById(id);
 		if (!project) {
-			return res.status(404).json({ message: 'Project not found' });
+			return res.status(404).json({ message: 'Gat ekki fundið verkefni' });
 		}
 		res.status(200).json(project);
 	} catch (error) {
@@ -124,7 +124,7 @@ export async function updateProject(
 		return
 	}
 	if (!(req.user && (req.user.isadmin || req.user.group_id === project.group_id))) {
-		res.status(403).send('Insufficient permissions: not in the project\'s group');
+		res.status(403).send('Óheimilaður aðgangur: aðeins admin eða notandi í hóp getur breytt verkefni');
 		return
 	}
 	let { group_id } = req.body;
@@ -160,7 +160,7 @@ export async function updateProject(
 	)
 
 	if (!updated) {
-		res.status(500).json({ error: 'Ekki tókt að uppfæra project' });
+		res.status(500).json({ error: 'Ekki tókst að uppfæra project' });
 		return
 	}
 	res.status(200).json(updated);
@@ -279,10 +279,10 @@ export const createUserHandler = [
 		.withMessage('Þarf að vera tilgreint hvort notandi sé admin eða ekki'),
 	body('avatar')
 		.custom(value => URL.canParse(value))
-		.withMessage('avatar þarf að vera gildur hlekkur')
+		.withMessage('Avatar þarf að vera gildur hlekkur')
 		.custom(value => {
 			const filetype = (new URL(value)).pathname.split('.');
-			return (filetype.includes('png')) || filetype.includes('jpeg')
+			return (filetype.includes('png')) || filetype.includes('jpeg') || filetype.includes('jpg')
 		}
 		)
 		.withMessage('mynd þarf að vera png eða jpg')
@@ -374,7 +374,7 @@ export async function updateUser(req: Request, res: Response, next: NextFunction
 	}
 	const { isadmin, username, password, avatar, group_id } = req.body;
 	if (!req.user || !req.user.isadmin || req.user.id !== user.id) {
-		res.status(403).send('Insufficient permissions: only the account owner or an admin can perform this action');
+		res.status(403).send('Óheimilaður aðgangur, aðeins eigandi notanda eða admin getur breytt notanda');
 		return
 	}
 	const hashedPassword = await hashPassword(password);
@@ -412,7 +412,7 @@ export async function updateUser(req: Request, res: Response, next: NextFunction
 	)
 
 	if (!updated) {
-		return next(new Error('unable to update team'));
+		return next(new Error('Gat ekki uppfært hóp'));
 	}
 
 	res.status(200).json(updated)
@@ -431,7 +431,7 @@ export const patchUser = [
 		.withMessage('avatar þarf að vera gildur hlekkur')
 		.custom(value => {
 			const filetype = (new URL(value)).pathname.split('.');
-			return (filetype.includes('png')) || filetype.includes('jpeg')
+			return (filetype.includes('png')) || filetype.includes('jpeg') || filetype.includes('jpg')
 		}
 		)
 		.withMessage('mynd þarf að vera png eða jpg')
@@ -507,7 +507,7 @@ export const deleteGroupHandler = async (req: Request, res: Response, next: Next
 	const { groupId } = req.params;
 	const id = paramtala(groupId);
 	if (!id) {
-		res.status(400).json({ error: '/groups/:groupId þarf að vera heilta > 0' })
+		res.status(400).json({ error: '/groups/:groupId þarf að vera heiltala > 0' })
 		return
 	}
 	try {
@@ -528,7 +528,7 @@ export const getGroupByIdHandler = async (req: Request, res: Response, next: Nex
 		}
 		const group = await getGroupById(id);
 		if (!group) {
-			res.status(404).json({ message: 'Group not found' });
+			res.status(404).json({ message: 'Gat ekki fundið hóp' });
 			return
 		}
 
