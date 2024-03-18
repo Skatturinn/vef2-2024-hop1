@@ -260,7 +260,7 @@ export const getUsers = async (req: Request, res: Response) => {
 	const villur: Array<string> = [];
 	Object.keys(stikar).forEach(key => !stikar[key] && req.query[key] && villur.push(key))
 	if (villur.length > 0) {
-		res.status(400).json({ error: `leitar stiki eiga að vera heiltölur stærri en 0: ${villur.join(', ')}` });
+		res.status(400).json({ error: `Leitar stiki eiga að vera heiltölur stærri en 0: ${villur.join(', ')}` });
 	} else {
 		const pageFiltered = Number(page) > 0 && Number.parseInt(String(page));
 		const users = await getUsersPage(pageFiltered || 0);
