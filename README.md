@@ -33,7 +33,7 @@ Elías Lúðvíksson: @Skatturinn, ell9@hi.is
 
 Færð Authorization key, fyrir admin only aðferðir þá þarf að fara í Headers á postman og velja Authorization undir key og value er Bearer _TOKEN_
 
-				"Authorization": `Beare ${token}`
+				"Authorization": `Bearer ${token}`
 
 # API Reference
 
