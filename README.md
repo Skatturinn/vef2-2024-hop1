@@ -98,6 +98,7 @@ Færð Authorization key, fyrir admin only aðferðir þá þarf að fara í Hea
 							title: string, // required: heiti verkefnis
   							group_id: number, // númer hóps, default það sama og notandans
   							creator_id: number, // default sama og notandans
+  							assigned_id: number, // optional id notanda verkefnis
   							description: string // optional lýsing á verkefni
 							}
 - **GET /projects/:projectId**: Get á verkefni.
