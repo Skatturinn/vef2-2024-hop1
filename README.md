@@ -56,14 +56,17 @@ Færð Authorization key, fyrir admin only aðferðir þá þarf að fara í Hea
   					body:	{
 							isadmin: boolean,
 							username: string,
-							password: string
+							password: string,
+  							avatar: string, // optional hlekkur á mynd
+  							avatar64: string, // optional mynd sem base64 strengur
+  							group_id: number // heiltala stærri en 0 sem bendir á hvaða hóp einstaklingur er í
 						}
 - **GET /users/:userId**: Get á user.
 - **PATCH /users/:userID**: Patch á user (Admin or user owner only)
 
 
 					  body: {
-					  group_id: number
+					  group_id: number // eða eitthvað annað af fyrrnefndu sem vill breyta
 					  }
 - **DELETE /users/:userId**: Delete user (Admin only).
 
@@ -91,14 +94,17 @@ Færð Authorization key, fyrir admin only aðferðir þá þarf að fara í Hea
 
 
 						body: {
-							status: 0,
-							title: string
+							status: 0, // required: staða verkefni
+							title: string, // required: heiti verkefnis
+  							group_id: number, // númer hóps, default það sama og notandans
+  							creator_id: number, // default sama og notandans
+  							description: string // optional lýsing á verkefni
 							}
 - **GET /projects/:projectId**: Get á verkefni.
 - **PATCH /projects/:projectId**: Breyta verkefni (Admin or group member only).
 
 
 						  body: {
-							status: 1
+							status: 1 // eða eh annað af fyrrnefndu
 							}
 - **DELETE /projects/:projectId**: Eyðir verkefni (Admin only).
