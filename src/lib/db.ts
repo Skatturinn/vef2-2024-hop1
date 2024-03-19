@@ -110,6 +110,9 @@ export async function getProjectsHandler(
 }
 
 export async function getProjectById(projectId: number) {
+	if (Number.isNaN(projectId)) {
+		return null
+	}
 	const queryText = `SELECT * FROM projects WHERE id = $1;`;
 	const result = await query(queryText, [projectId])
 	return result && result?.rows[0] || null;
@@ -145,6 +148,9 @@ export async function createUser(isadmin: boolean | '', username: string, passwo
 }
 
 export async function delUser(userId: number) {
+	if (Number.isNaN(userId)) {
+		return null
+	}
 	const userRes = await query('SELECT avatar FROM Users WHERE id = $1', [userId]);
 	const avatarPublicId = userRes?.rows[0]?.avatar;
 	if (avatarPublicId) {
@@ -155,6 +161,9 @@ export async function delUser(userId: number) {
 }
 
 export async function getUserById(userId: number) {
+	if (Number.isNaN(userId)) {
+		return null
+	}
 	const queryText = `SELECT * FROM Users WHERE id = $1;`;
 	const result = await query(queryText, [userId]);
 	return result && result.rows[0] || null;
@@ -175,6 +184,9 @@ export async function getGroups(page: number, admin_id: false | number) {
 }
 
 export async function createGroup(admin_id: number, name: string) {
+	if (Number.isNaN(admin_id)) {
+		return null
+	}
 	const queryText = `INSERT INTO Groups(admin_id, name) VALUES ($1, $2) RETURNING id;`;
 	const result = await query(queryText, [admin_id, name])
 	return result && result?.rows[0] || null;
@@ -189,6 +201,9 @@ export async function delGroup(groupId: number) {
 }
 
 export async function getGroupById(groupId: number) {
+	if (Number.isNaN(groupId)) {
+		return null
+	}
 	const queryText = `SELECT * FROM Groups WHERE id = $1;`;
 	const result = await query(queryText, [groupId]);
 	return result && result.rows[0] || null;
@@ -218,6 +233,11 @@ export async function conditionalUpdate(
 	fields: Array<string | null>,
 	values: Array<string | number | null>,
 ) {
+	if (table === 'users' && fields.includes('avatar')) {
+		const userRes = await query('SELECT avatar FROM Users WHERE id = $1', [id]);
+		const avatarPublicId = userRes && userRes?.rows[0]?.avatar;
+		avatarPublicId && await deleteImage(avatarPublicId)
+	}
 	const filteredFields = fields.filter((i) => typeof i === 'string');
 	const filteredValues = values.filter(
 		(i): i is string | number => typeof i === 'string' || typeof i === 'number',

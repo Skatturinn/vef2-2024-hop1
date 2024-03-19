@@ -43,6 +43,6 @@ export const deleteImage = async (publicId: string) => {
 		return result;
 	} catch (error) {
 		console.error("Error deleting image:", error);
-		throw error;
+		return null
 	}
 };
