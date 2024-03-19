@@ -270,18 +270,22 @@ export const getUsers = async (req: Request, res: Response) => {
 	}
 }
 
+export const avt64 = body('avatar64')
+	.custom(value => /^[A-Za-z0-9+/]+={0,2}$/.test(value))
+	.withMessage('avatar64 þarf að vera base64 bita strengur af mynd')
+	.custom(value => atob(value).length * 2 <= 1_000_000)
+	.withMessage('mynding má ekki vera stærri en 1mb')
+	.custom(value => (isPNGBase64(value) || isJPEGBase64(value)))
+	.withMessage('Þarf að vera base64 strengur af jpeg/jpg eða png mynd')
+	.optional(true)
+
+
 export const createUserHandler = [
 	stringValidator({ field: 'username', minLength: 3, maxLength: 255 }),
 	stringValidator({ field: 'password', minLength: 6 }),
 	stringValidator({ field: 'avatar', minLength: 3, maxLength: 255, optional: true }),
 	stringValidator({ field: 'avatar64', optional: true }),
-	body('avatar64')
-		.custom(value =>
-			/^[A-Za-z0-9+/]+={0,2}$/.test(value) // <- chatgpt
-			&& atob(value).length * 2 < 5_000_000
-			&& (isPNGBase64(value) || isJPEGBase64(value)))
-		.withMessage('avatar64 þarf að vera löglegt bitastreymi af jpeg eða png mynd sem strengur minni en 5mb; jpeg mundi byrja á /9j/... og png á iVBO...')
-		.optional(true),
+	avt64,
 	heiltalaStaerri('group_id', true),
 	body('isadmin')
 		.trim()
@@ -454,14 +458,7 @@ export const patchUser = [
 	stringValidator({ field: 'password', minLength: 3, maxLength: 255, optional: true }),
 	stringValidator({ field: 'avatar', minLength: 3, maxLength: 255, optional: true }),
 	stringValidator({ field: 'avatar64', optional: true }),
-	body('avatar64')
-		.custom(value =>
-			/^[A-Za-z0-9+/]+={0,2}$/.test(value) // <- chatgpt
-			&& atob(value).length * 2 < 5_000_000
-			&&
-			(isPNGBase64(value) || isJPEGBase64(value)))
-		.withMessage('avatar64 þarf að vera löglegt bitastreymi af jpeg eða png mynd sem strengur minni en 5mb')
-		.optional(true),
+	avt64,
 	body('avatar')
 		.custom(value => URL.canParse(value))
 		.withMessage('avatar þarf að vera gildur hlekkur')
