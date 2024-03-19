@@ -23,9 +23,11 @@ import {
 	genericSanitizer,
 	atLeastOneBodyValueValidator,
 	heiltalaStaerri,
-	paramtala
+	paramtala,
+	isPNGBase64,
+	isJPEGBase64
 } from './validation.js';
-import { uploadImage } from '../cloudinary.js';
+import { uploadImage, uploadImage64 } from '../cloudinary.js';
 import { body } from 'express-validator';
 
 /**
@@ -272,6 +274,14 @@ export const createUserHandler = [
 	stringValidator({ field: 'username', minLength: 3, maxLength: 255 }),
 	stringValidator({ field: 'password', minLength: 6 }),
 	stringValidator({ field: 'avatar', minLength: 3, maxLength: 255, optional: true }),
+	stringValidator({ field: 'avatar64', optional: true }),
+	body('avatar64')
+		.custom(value =>
+			/^[A-Za-z0-9+/]+={0,2}$/.test(value) // <- chatgpt
+			&& atob(value).length * 2 < 5_000_000
+			&& (isPNGBase64(value) || isJPEGBase64(value)))
+		.withMessage('avatar64 þarf að vera löglegt bitastreymi af jpeg eða png mynd sem strengur minni en 5mb; jpeg mundi byrja á /9j/... og png á iVBO...')
+		.optional(true),
 	heiltalaStaerri('group_id', true),
 	body('isadmin')
 		.trim()
@@ -298,7 +308,7 @@ export const createUserHandler = [
 	genericSanitizer('password'),
 	async (req: Request, res: Response, next: NextFunction) => {
 		try {
-			const { isadmin, username, password, avatar, group_id } = req.body;
+			const { isadmin, username, password, avatar, group_id, avatar64 } = req.body;
 			if (group_id) {
 				const group = await getGroupById(Number.parseInt(group_id));
 				if (!group) {
@@ -322,6 +332,13 @@ export const createUserHandler = [
 					return
 				}
 				avatarUrl = uploadResult;
+			} else if (avatar64) {
+				const uploadResult = await uploadImage64(avatar64, isPNGBase64(avatar64) ? 'png' : 'jpg');
+				avatarUrl = typeof uploadResult === 'string' ? uploadResult : '';
+				if (!avatarUrl) {
+					res.status(500).json({ error: 'ekki tókst að hlaða upp mynd' });
+					return
+				}
 			}
 			const user = await createUser(isadmin, username, hashedPassword, avatarUrl, Number.parseInt(group_id) || null);
 			if (!user) {
@@ -372,7 +389,7 @@ export async function updateUser(req: Request, res: Response, next: NextFunction
 		res.status(400).json({ error: `notandi fannst ekki á skrá með id=${userId}, id á að vera heiltala stærri en 0` });
 		return
 	}
-	const { isadmin, username, password, avatar, group_id } = req.body;
+	const { isadmin, username, password, avatar, group_id, avatar64 } = req.body;
 	if (!req.user || !req.user.isadmin || req.user.id !== user.id) {
 		res.status(403).send('Óheimilaður aðgangur, aðeins eigandi notanda eða admin getur breytt notanda');
 		return
@@ -381,6 +398,13 @@ export async function updateUser(req: Request, res: Response, next: NextFunction
 	let avatarUrl = '';
 	if (avatar) {
 		const uploadResult = await uploadImage(avatar);
+		avatarUrl = typeof uploadResult === 'string' ? uploadResult : '';
+		if (!avatarUrl) {
+			res.status(500).json({ error: 'ekki tókst að hlaða upp mynd' });
+			return
+		}
+	} else if (avatar64) {
+		const uploadResult = await uploadImage64(avatar64, isPNGBase64(avatar64) ? 'png' : 'jpg');
 		avatarUrl = typeof uploadResult === 'string' ? uploadResult : '';
 		if (!avatarUrl) {
 			res.status(500).json({ error: 'ekki tókst að hlaða upp mynd' });
@@ -415,7 +439,7 @@ export async function updateUser(req: Request, res: Response, next: NextFunction
 	)
 
 	if (!updated) {
-		return next(new Error('Gat ekki uppfært hóp'));
+		return next(new Error('Gat ekki uppfært notanda'));
 	}
 
 	res.status(200).json(updated)
@@ -425,10 +449,19 @@ export function isUrlValid(string: string): string {
 	return URL.canParse(string) ? (new URL(string)).href : '';
 }
 export const patchUser = [
-	atLeastOneBodyValueValidator(['isadmin', 'username', 'password', 'avatar', 'group_id']),
+	atLeastOneBodyValueValidator(['isadmin', 'username', 'password', 'avatar', 'group_id', 'avatar64']),
 	stringValidator({ field: 'username', minLength: 3, maxLength: 255, optional: true }),
 	stringValidator({ field: 'password', minLength: 3, maxLength: 255, optional: true }),
 	stringValidator({ field: 'avatar', minLength: 3, maxLength: 255, optional: true }),
+	stringValidator({ field: 'avatar64', optional: true }),
+	body('avatar64')
+		.custom(value =>
+			/^[A-Za-z0-9+/]+={0,2}$/.test(value) // <- chatgpt
+			&& atob(value).length * 2 < 5_000_000
+			&&
+			(isPNGBase64(value) || isJPEGBase64(value)))
+		.withMessage('avatar64 þarf að vera löglegt bitastreymi af jpeg eða png mynd sem strengur minni en 5mb')
+		.optional(true),
 	body('avatar')
 		.custom(value => URL.canParse(value))
 		.withMessage('avatar þarf að vera gildur hlekkur')

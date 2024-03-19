@@ -108,3 +108,44 @@ export const heiltalaStaerri = (field: string, optional: boolean = false) => {
 export const paramtala = (number: string) => {
 	return Number(number) > 0 && Number.parseInt(number)
 }
+
+/**
+ * Chatgpt fall
+ * @param base64String 
+ * @returns 
+ */
+export function isJPEGBase64(base64String: string) {
+	try {
+		const decodedData = atob(base64String);
+		// Check if the first two bytes match the JPEG magic number
+		return decodedData.charCodeAt(0) === 0xFF && decodedData.charCodeAt(1) === 0xD8;
+	} catch (error) {
+		console.error("Error:", error);
+		return false;
+	}
+}
+
+/**
+ * Chatgpt fall
+ * @param base64String 
+ * @returns 
+ */
+export function isPNGBase64(base64String: string) {
+	try {
+		const decodedData = atob(base64String);
+		// Check if the first eight bytes match the PNG magic number
+		return (
+			decodedData.charCodeAt(0) === 0x89 &&
+			decodedData.charCodeAt(1) === 0x50 &&
+			decodedData.charCodeAt(2) === 0x4E &&
+			decodedData.charCodeAt(3) === 0x47 &&
+			decodedData.charCodeAt(4) === 0x0D &&
+			decodedData.charCodeAt(5) === 0x0A &&
+			decodedData.charCodeAt(6) === 0x1A &&
+			decodedData.charCodeAt(7) === 0x0A
+		);
+	} catch (error) {
+		console.error("Error:", error);
+		return false;
+	}
+}

@@ -139,7 +139,7 @@ export async function loginUser(username: string): Promise<IUser | null> {
 }
 
 export async function createUser(isadmin: boolean | '', username: string, password: string, avatarUrl: string, group_id: number | null) {
-	const queryText = `INSERT INTO Users(isadmin, username, password, avatar, group_id) VALUES ($1, $2, $3, $4, $5) RETURNING id;`;
+	const queryText = `INSERT INTO Users(isadmin, username, password, avatar, group_id) VALUES ($1, $2, $3, $4, $5) RETURNING id, isadmin, username, avatar, group_id;`;
 	const result = await query(queryText, [isadmin, username, password, avatarUrl, group_id])
 	return result && result.rows[0] || null;
 }
@@ -239,7 +239,8 @@ export async function conditionalUpdate(
 		SET ${updates.join(', ')}
 	  WHERE
 		id = $1
-	  RETURNING *
+	  RETURNING 
+	  ${table === 'users' ? ' id, isadmin, username, avatar, group_id' : '*'}
 	  `;
 
 	const queryValues: Array<string | number> = (

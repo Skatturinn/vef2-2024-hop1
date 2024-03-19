@@ -88,7 +88,18 @@ describe('integration', () => {
 						avatar: "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500"
 					});
 				expect(response.statusCode).toBe(200);
-
+				expect(response.body['id']).toBe(userAuth.id)
+			});
+			test('PATCH /users/:userId breytir mynd með 64bitastreymi', async () => {
+				const response = await request(app)
+					.patch(`/users/${userAuth.id}`)
+					.set('Authorization', `${userAuth.token}`)
+					.send({
+						avatar64: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
+					});
+				expect(response.statusCode).toBe(200);
+				expect(response.body['id']).toBe(userAuth.id)
+				expect(response.body.password).toBe(undefined)
 			});
 			const project: { [key: string]: string } = {};
 			test('POST /projects býr til verkefni', async () => {
