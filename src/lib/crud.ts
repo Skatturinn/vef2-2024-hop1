@@ -230,8 +230,8 @@ export const postProject = [
 		const { assigned_id, title, status, description } = req.body;
 		group_id = group_id || req.user?.group_id;
 		creator_id = creator_id || req.user?.id;
-		const group = await getGroupById(Number.parseInt(group_id));
-		const creator = await getUserById(Number.parseInt(creator_id));
+		const group = Number(group_id) > 0 && await getGroupById(Number.parseInt(group_id));
+		const creator = Number(group_id) > 0 && await getUserById(Number.parseInt(creator_id));
 		if (!group || !creator) {
 			res.status(400).json({
 				error:
@@ -459,6 +459,9 @@ export const patchUser = [
 	stringValidator({ field: 'avatar', minLength: 3, maxLength: 255, optional: true }),
 	stringValidator({ field: 'avatar64', optional: true }),
 	avt64,
+	body('username')
+		.custom(async nafn => !!(await getUserByUsername(nafn)))
+		.withMessage('nafn er frátekið'),
 	body('avatar')
 		.custom(value => URL.canParse(value))
 		.withMessage('avatar þarf að vera gildur hlekkur')
