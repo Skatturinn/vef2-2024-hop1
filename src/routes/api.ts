@@ -122,7 +122,7 @@ router.post('/login', async (req, res) => {
 	const match = await bcrypt.compare(password, user.password);
 	if (match) {
 		const token = jwt.sign({ id: user.id, isAdmin: user.isadmin }, secret, { expiresIn: '1h' });
-		res.status(200).json({ token, isAdmin: user.isadmin });
+		res.status(200).json({ token, isAdmin: user.isadmin, id: user.id });
 	} else {
 		res.status(401).json({ error: 'Login failed' });
 	}
