@@ -115,7 +115,7 @@ router.post('/login', async (req, res) => {
 	const { username, password } = req.body;
 	const user = await loginUser(username);
 	if (!user) {
-		return res.status(401).json({ error: 'Login failed' });
+		return res.status(401).json({ error: 'Notendanafn ekki til á skrá' });
 	}
 
 	const secret = process.env.JWT_SECRET || 'default-secret';
@@ -124,7 +124,7 @@ router.post('/login', async (req, res) => {
 		const token = jwt.sign({ id: user.id, isAdmin: user.isadmin }, secret, { expiresIn: '1h' });
 		res.status(200).json({ token });
 	} else {
-		res.status(401).json({ error: 'Login failed' });
+		res.status(401).json({ error: 'Rangt lykilorð' });
 	}
 });
 
