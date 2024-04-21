@@ -103,6 +103,10 @@ export async function index(req: Request, res: Response) {
 		{
 			href: '/login',
 			method: ['POST'],
+		},
+		{
+			href: '/authenticate',
+			method: ['POST']
 		}
 	])
 }
@@ -127,6 +131,12 @@ router.post('/login', async (req, res) => {
 		res.status(401).json({ error: 'Rangt lykilorð' });
 	}
 });
+router.post('/authenticate', authenticate,
+	(req, res) => {
+		if (req.user) return res.status(200).json({ admin: req.user.isadmin })
+		return res.status(200).json({ admin: false })
+	}
+)
 
 // Project routes
 router.get('/projects', catchErrors(getProjects));
