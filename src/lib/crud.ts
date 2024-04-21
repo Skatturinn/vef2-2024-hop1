@@ -403,9 +403,9 @@ export async function updateUser(req: Request, res: Response, next: NextFunction
 		return
 	}
 	const { isadmin, username, password, avatar, group_id, avatar64 } = req.body;
-	if (!req.user || !req.user.isadmin || req.user.id !== user.id) {
-		res.status(403).send('Óheimilaður aðgangur, aðeins eigandi notanda eða admin getur breytt notanda');
-		return
+	if (!req.user || (req.user.id !== user.id && !req.user.isadmin)) { 
+		res.status(403).send('Óheimilaður aðgangur, aðeins eigandi notanda eða admin getur breytt notanda'); 
+		return 
 	}
 	const hashedPassword = await hashPassword(password);
 	let avatarUrl = '';
