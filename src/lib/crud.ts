@@ -29,6 +29,7 @@ import {
 } from './validation.js';
 import { uploadImage, uploadImage64 } from '../cloudinary.js';
 import { body } from 'express-validator';
+import cloudinary from 'cloudinary';
 
 /**
  * Sækir projects úr database út frá query filters ef vill, 10 per ?page
@@ -379,6 +380,14 @@ export const getUserByIdHandler = async (req: Request, res: Response, next: Next
 		if (!user) {
 			res.status(400).json({ error: `notandi fannst ekki á skrá með id=${userId}, id á að vera heiltala stærri en 0` });
 			return
+		}
+		if (user?.avatar) {
+			try {
+				const avatarUrl = cloudinary.v2.url(user.avatar as string, { secure: true });
+				user.avatar = avatarUrl
+			} catch (err) {
+				res.status(500).json({ error: 'Error generating avatar URL' });
+			}
 		}
 		res.status(200).json(user);
 	} catch (error) {
