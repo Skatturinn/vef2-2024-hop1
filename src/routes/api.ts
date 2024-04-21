@@ -106,7 +106,8 @@ export async function index(req: Request, res: Response) {
 		},
 		{
 			href: '/authenticate',
-			method: ['POST']
+			method: ['POST'],
+			description: 'Authenticates user for forntend'
 		}
 	])
 }
