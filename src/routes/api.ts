@@ -135,7 +135,7 @@ router.post('/login', async (req, res) => {
 router.post('/authenticate', authenticate,
 	(req, res) => {
 		if (req.user) return res.status(200).json({ admin: req.user.isadmin })
-		return res.status(200).json({ admin: false })
+		return res.status(401).json({ message: 'unauthorized' })
 	}
 )
 
