@@ -33,7 +33,7 @@ const { connectionString } = env;
 
 export const pool = new pg.Pool({
 	connectionString,
-	ssl: process.env.NODE_ENV === 'production' ? true : sslConfig,
+	ssl: true,
 });
 
 pool.on('error', (err: Error) => {
