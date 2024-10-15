@@ -33,7 +33,7 @@ const { connectionString } = env;
 
 export const pool = new pg.Pool({
 	connectionString,
-	ssl:  true,
+	ssl:  sslConfig,
 });
 
 pool.on('error', (err: Error) => {
